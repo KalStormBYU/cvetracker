@@ -54,7 +54,7 @@ ORDER BY "Computer Name"
 
 /*---- Used to list the Apps on all computers ----*/
 CREATE VIEW all_computer_apps AS 
-SELECT all_computer_appids.name "Computer Name", "APP".name "App Name", version "App Version", "APP".appid FROM all_computer_appids 
+SELECT all_computer_appids."Computer Name", "APP".name "App Name", version "App Version", "APP".appid FROM all_computer_appids 
 JOIN "APP" ON all_computer_appids.appid = "APP".appid 
 ORDER BY "Computer Name";
 
@@ -66,6 +66,6 @@ ORDER BY "Computer Name";
 
 /*---- Used to list all Apps and Vulnerabilities on all computers ----*/
 CREATE VIEW all_computer_apps_vulns AS 
-SELECT "Computer Name", "App Name", "App Version",cve,severity FROM testing4 
-JOIN "VULNERABILITY" on "VULNERABILITY".vulnid = testing4.vulnid 
+SELECT "Computer Name", "App Name", "App Version",cve,severity FROM all_computer_vulnids 
+JOIN "VULNERABILITY" on "VULNERABILITY".vulnid = all_computer_vulnids.vulnid 
 ORDER BY severity DESC, "Computer Name";
