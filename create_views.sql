@@ -29,19 +29,14 @@ RIGHT JOIN "BUSINESS_UNIT" ON "BUSINESS_UNIT".unitid = all_bu_vulnerabilities_ov
 /* ----- Vulnerabilities in a single Business Unit ----- */
 DROP VIEW IF EXISTS bu_vulnerabilities;
 DROP VIEW IF EXISTS bu_computer_vulns;
-DROP VIEW IF EXISTS bu_computers;
 
---Used to add the computer ids assigned to a business unit to a view
-CREATE VIEW bu_computers AS
-SELECT * FROM "COMPUTER" WHERE unitid = (SELECT unitid FROM "BUSINESS_UNIT" WHERE name = 'Library');
-
---Used to add the vulnerability id to the earlier view 
+--Used to add the vulnerability id to the COMPUTER table 
 CREATE VIEW bu_computer_vulns AS
-SELECT name, operatingsystem, bu_computers.computerid, os_version, unitid, vulnid FROM bu_computers INNER JOIN "COMPUTER_VULNERABILITIES" ON bu_computers.computerid = "COMPUTER_VULNERABILITIES".computerid;
+SELECT name, operatingsystem, "COMPUTER".computerid, os_version, unitid, vulnid FROM "COMPUTER" INNER JOIN "COMPUTER_VULNERABILITIES" ON "COMPUTER".computerid = "COMPUTER_VULNERABILITIES".computerid;
 
 --Used to return the information we care about: the cve, severity, computer name, and os info for each business unit
 CREATE VIEW bu_vulnerabilities AS
-SELECT cve, severity, name AS computername, operatingsystem AS os, os_version FROM bu_computer_vulns
+SELECT cve, severity, name AS computername, operatingsystem AS os, os_version, unitid FROM bu_computer_vulns
 INNER JOIN "VULNERABILITY" ON bu_computer_vulns.vulnid = "VULNERABILITY".vulnid
 ORDER BY severity DESC, computername;
 
