@@ -40,6 +40,11 @@ SELECT cve, severity, name AS computername, operatingsystem AS os, os_version, u
 INNER JOIN "VULNERABILITY" ON bu_computer_vulns.vulnid = "VULNERABILITY".vulnid
 ORDER BY severity DESC, computername;
 
+--Used to add the actual business unit name to the above view
+CREATE VIEW full_bu_vulns AS
+SELECT cve, severity, computername, os, os_version, name AS "Business Unit", bu_vulnerabilities.unitid FROM bu_vulnerabilities
+INNER JOIN "BUSINESS_UNIT" ON bu_vulnerabilities.unitid = "BUSINESS_UNIT".unitid;
+
 
 /*---- Used to add the appid to a computer ----*/
 CREATE VIEW all_computer_appids AS 
