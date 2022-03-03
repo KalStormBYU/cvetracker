@@ -17,9 +17,9 @@ INSERT INTO "USER" (username,"role",firstname,lastname) VALUES ('analyst','analy
   Insert Dummy Data into "BUSINESS_UNIT" table
 */
 
-INSERT INTO "BUSINESS_UNIT" ("name",administrator) VALUES ('Life Sciences', (SELECT "USER".userid from "USER" WHERE "USER".username = 'testuser1'));
-INSERT INTO "BUSINESS_UNIT" ("name",administrator) VALUES ('Physics', (SELECT "USER".userid from "USER" WHERE "USER".username = 'testuser2'));
-INSERT INTO "BUSINESS_UNIT" ("name",administrator) VALUES ('Library', (SELECT "USER".userid FROM "USER" WHERE "USER".username = 'testuser2'));
+INSERT INTO "BUSINESS_UNIT" ("name",administrator) VALUES ('Life Sciences', (SELECT "USER".userid from "USER" WHERE "USER".username = 'sysadmin1'));
+INSERT INTO "BUSINESS_UNIT" ("name",administrator) VALUES ('Physics', (SELECT "USER".userid from "USER" WHERE "USER".username = 'sysadmin2'));
+INSERT INTO "BUSINESS_UNIT" ("name",administrator) VALUES ('Library', (SELECT "USER".userid FROM "USER" WHERE "USER".username = 'sysadmin2'));
 
 /*
   Insert Dummy Data into "COMPUTER" table
