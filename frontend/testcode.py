@@ -37,13 +37,20 @@ class cvetracker(cmd2.Cmd):
     #@cmd2.with_argparser(role_parser)
     def do_role(self, args):
         """Print the role of the user"""
+        amiLogged()
         if loggedIn == False:
             self.poutput("Sorry, can't access the database")
         else:
             self.poutput("Welcome to the database!")
             self.poutput("What would you like to do?")
 
-
+def amiLogged():
+    global loggedIn
+    resp = input("Am I logged in? y/n\n")
+    if resp == 'n':
+        loggedIn = True
+    elif resp == 'y':
+        loggedIn = False
 
 
 if __name__ == '__main__':
