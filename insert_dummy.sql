@@ -9,10 +9,10 @@ INSERT INTO "APP" ("name","version") VALUES ('GoogleAdsTracker','0.1');
 /*
   Insert Dummy Data into "USER" table
 */
-INSERT INTO "USER" (username,saltyhash,"role",firstname,lastname) VALUES ('testuser1','thisisnotactuallyasaltedhash','administrator','Tom','Hardy');
-INSERT INTO "USER" (username,saltyhash,"role",firstname,lastname) VALUES ('testuser2','thisisnotactuallyasaltedhash','administrator','Bob','Ross');
-INSERT INTO "USER" (username,saltyhash,"role",firstname,lastname) VALUES ('testuser3','thisisnotactuallyasaltedhash','engineer','Tom','Holland');
-INSERT INTO "USER" (username,saltyhash,"role",firstname,lastname) VALUES ('testuser4','thisisnotactuallyasaltedhash','analyst','Zendya','I have no idea what her last name is');
+INSERT INTO "USER" (username,"role",firstname,lastname) VALUES ('sysadmin1','administrator','Tom','Hardy');
+INSERT INTO "USER" (username,"role",firstname,lastname) VALUES ('sysadmin2','administrator','Bob','Ross');
+INSERT INTO "USER" (username,"role",firstname,lastname) VALUES ('engineer','engineer','Tom','Holland');
+INSERT INTO "USER" (username,"role",firstname,lastname) VALUES ('analyst','analyst','Zendaya','Coleman');
 /*
   Insert Dummy Data into "BUSINESS_UNIT" table
 */
