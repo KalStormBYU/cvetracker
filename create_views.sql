@@ -27,6 +27,7 @@ FROM all_bu_vulnerabilities_over_5
 RIGHT JOIN "BUSINESS_UNIT" ON "BUSINESS_UNIT".unitid = all_bu_vulnerabilities_over_5.unitid;
 
 /* ----- Vulnerabilities in a single Business Unit ----- */
+DROP VIEW IF EXISTS full_bu_vulns;
 DROP VIEW IF EXISTS bu_vulnerabilities;
 DROP VIEW IF EXISTS bu_computer_vulns;
 
@@ -46,25 +47,31 @@ SELECT cve, severity, computername, os, os_version, name AS "Business Unit", bu_
 INNER JOIN "BUSINESS_UNIT" ON bu_vulnerabilities.unitid = "BUSINESS_UNIT".unitid;
 
 
-/*---- Used to add the appid to a computer ----*/
+/* ----- Lists all apps and vulnerabilities for all computers ----- */
+DROP VIEW IF EXISTS all_computer_apps_vulns;
+DROP VIEW IF EXISTS all_computer_vulnids;
+DROP VIEW IF EXISTS all_computer_apps;
+DROP VIEW IF EXISTS all_computer_appids;
+
+--Used to add the appid to a computer
 CREATE VIEW all_computer_appids AS 
 SELECT name "Computer Name",OS_version,appid from "COMPUTER" 
 JOIN "RUNS" on "COMPUTER".computerid = "RUNS".computerid
-ORDER BY "Computer Name"
+ORDER BY "Computer Name";
 
-/*---- Used to list the Apps on all computers ----*/
+--Used to list the Apps on all computers
 CREATE VIEW all_computer_apps AS 
 SELECT all_computer_appids."Computer Name", "APP".name "App Name", version "App Version", "APP".appid FROM all_computer_appids 
 JOIN "APP" ON all_computer_appids.appid = "APP".appid 
 ORDER BY "Computer Name";
 
-/*---- Used to add the vulnid to all computers ---*/
+--Used to add the vulnid to all computers
 CREATE VIEW all_computer_vulnids AS
 SELECT "Computer Name", "App Name", "App Version", vulnid FROM all_computer_apps
 JOIN "APP_VULNERABILITIES" ON all_computer_apps.appid = "APP_VULNERABILITIES".appid
 ORDER BY "Computer Name";
 
-/*---- Used to list all Apps and Vulnerabilities on all computers ----*/
+--Used to list all Apps and Vulnerabilities on all computers
 CREATE VIEW all_computer_apps_vulns AS 
 SELECT "Computer Name", "App Name", "App Version",cve,severity FROM all_computer_vulnids 
 JOIN "VULNERABILITY" on "VULNERABILITY".vulnid = all_computer_vulnids.vulnid 
