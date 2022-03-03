@@ -1,5 +1,6 @@
 DROP FUNCTION IF EXISTS select_all_computer_app_vulns;
 DROP FUNCTION IF EXISTS select_all_bu_vulns_count;
+DROP FUNCTION IF EXISTS select_all_bu_info;
 
 /* ----- Function to select all app vulnerabilities associated with specified computers ----- */
 CREATE FUNCTION select_all_computer_app_vulns(
@@ -43,3 +44,26 @@ END;$$;
 
 -- How to run the above function:
 -- SELECT * FROM select_all_bu_vulns_count('%');
+
+/* ----- Function to select all information from specified business units ----- */
+CREATE FUNCTION select_all_bu_info(
+	BUs text
+)
+RETURNS TABLE (
+	"cve" varchar(32),
+	"severity" float,
+	"Computer Name" varchar(32),
+	"Operating System" varchar(255),
+	"OS_Version" varchar(64),
+	"Business Unit" varchar(255)
+)
+LANGUAGE plpgsql
+AS $$
+DECLARE bu_names varchar[];
+BEGIN
+bu_names = string_to_array($1,',');
+RETURN QUERY SELECT full_bu_vulns.cve, full_bu_vulns.severity, full_bu_vulns.computername, full_bu_vulns.os, full_bu_vulns.os_version, full_bu_vulns."Business Unit" FROM full_bu_vulns WHERE full_bu_vulns."Business Unit" LIKE ANY (bu_names);
+END;$$;
+
+-- How to run the above function:
+-- SELECT * FROM select_all_bu_info('Life Sciences,Library');
