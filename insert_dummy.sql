@@ -9,17 +9,17 @@ INSERT INTO "APP" ("name","version") VALUES ('GoogleAdsTracker','0.1');
 /*
   Insert Dummy Data into "USER" table
 */
-INSERT INTO "USER" (username,saltyhash,"role",firstname,lastname) VALUES ('testuser1','thisisnotactuallyasaltedhash','administrator','Tom','Hardy');
-INSERT INTO "USER" (username,saltyhash,"role",firstname,lastname) VALUES ('testuser2','thisisnotactuallyasaltedhash','administrator','Bob','Ross');
-INSERT INTO "USER" (username,saltyhash,"role",firstname,lastname) VALUES ('testuser3','thisisnotactuallyasaltedhash','engineer','Tom','Holland');
-INSERT INTO "USER" (username,saltyhash,"role",firstname,lastname) VALUES ('testuser4','thisisnotactuallyasaltedhash','analyst','Zendya','I have no idea what her last name is');
+INSERT INTO "USER" (username,"role",firstname,lastname) VALUES ('sysadmin1','administrator','Tom','Hardy');
+INSERT INTO "USER" (username,"role",firstname,lastname) VALUES ('sysadmin2','administrator','Bob','Ross');
+INSERT INTO "USER" (username,"role",firstname,lastname) VALUES ('engineer','engineer','Tom','Holland');
+INSERT INTO "USER" (username,"role",firstname,lastname) VALUES ('analyst','analyst','Zendaya','Coleman');
 /*
   Insert Dummy Data into "BUSINESS_UNIT" table
 */
 
-INSERT INTO "BUSINESS_UNIT" ("name",administrator) VALUES ('Life Sciences', (SELECT "USER".userid from "USER" WHERE "USER".username = 'testuser1'));
-INSERT INTO "BUSINESS_UNIT" ("name",administrator) VALUES ('Physics', (SELECT "USER".userid from "USER" WHERE "USER".username = 'testuser2'));
-INSERT INTO "BUSINESS_UNIT" ("name",administrator) VALUES ('Library', (SELECT "USER".userid FROM "USER" WHERE "USER".username = 'testuser2'));
+INSERT INTO "BUSINESS_UNIT" ("name",administrator) VALUES ('Life Sciences', (SELECT "USER".userid from "USER" WHERE "USER".username = 'sysadmin1'));
+INSERT INTO "BUSINESS_UNIT" ("name",administrator) VALUES ('Physics', (SELECT "USER".userid from "USER" WHERE "USER".username = 'sysadmin2'));
+INSERT INTO "BUSINESS_UNIT" ("name",administrator) VALUES ('Library', (SELECT "USER".userid FROM "USER" WHERE "USER".username = 'sysadmin2'));
 
 /*
   Insert Dummy Data into "COMPUTER" table

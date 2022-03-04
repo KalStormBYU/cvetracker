@@ -1,0 +1,347 @@
+-- This is needed for the AWS Lambda integration to work, which in turn is needed for the API.
+CREATE EXTENSION IF NOT EXISTS aws_lambda CASCADE;
+
+DROP TABLE IF EXISTS "USER" CASCADE;
+DROP TABLE IF EXISTS "APP" CASCADE;
+DROP TABLE IF EXISTS "VULNERABILITY" CASCADE;
+DROP TABLE IF EXISTS "APP_VULNERABILITIES" CASCADE;
+DROP TABLE IF EXISTS "BUSINESS_UNIT" CASCADE;
+DROP TABLE IF EXISTS "COMPUTER" CASCADE;
+DROP TABLE IF EXISTS "RUNS" CASCADE;
+DROP TABLE IF EXISTS "COMPUTER_VULNERABILITIES" CASCADE;
+/*
+  I believe all these conditional drop table commands should keep us from running into trouble in the future.
+  You might be thinking to yourself, "Gee, does EVERY drop table if exists line need a CASCADE? It seems excessive."
+  NO. NO EVERY TABLE DOES NOT NEED A CASCADE. BUT I AM SICK OF SEEING POSTGRESQL YELL AT ME AS I TRY TO DELETE THINGS.
+*/
+
+CREATE TABLE "USER"
+(
+  Username VARCHAR (64) NOT NULL,
+  Role VARCHAR (64) NOT NULL,
+  FirstName VARCHAR (32) NOT NULL,
+  LastName VARCHAR (255) NOT NULL,
+  UserID SERIAL NOT NULL,
+  -- Note that I changed all the primary keys to "SERIAL." This should hopefully make them auto-increment
+  PRIMARY KEY (UserID),
+  UNIQUE (Username)
+);
+
+CREATE TABLE "APP"
+(
+  AppID SERIAL NOT NULL,
+  Name VARCHAR (255) NOT NULL,
+  Version VARCHAR (32) NOT NULL,
+  PRIMARY KEY (AppID)
+);
+
+CREATE TABLE "VULNERABILITY"
+(
+  Severity FLOAT NOT NULL,
+  VulnID SERIAL NOT NULL,
+  cve VARCHAR(32) NOT NULL,
+  PRIMARY KEY (VulnID)
+);
+
+CREATE TABLE "APP_VULNERABILITIES"
+(
+  AppID INT NOT NULL,
+  VulnID INT NOT NULL,
+  PRIMARY KEY (AppID, VulnID),
+  -- Take a look at the abomination that follows this comment! Yeah, PostgreSQL and I are not friends when it comes to foreign keys...
+  CONSTRAINT AppID_FK
+	FOREIGN KEY (AppID)
+	REFERENCES "APP"(AppID)
+	ON DELETE CASCADE
+	/*
+	  This "ON DELETE CASCADE" is reeeeeeaaaaaally important. It says "If I delete the object referenced by this foreign key, delete this item as well."
+	  The reason we care is that otherwise, PostgreSQL would throw an error and be all grumpy if we ever tried to, say, delete a computer.
+	  By including this, we keep it from yelling at us too much and we make database maintanence simple.
+	*/
+);
+
+CREATE TABLE "BUSINESS_UNIT"
+(
+  UnitID SERIAL NOT NULL,
+  Name VARCHAR (255) NOT NULL,
+  Administrator INT NOT NULL,
+  Belongs_To INT,
+  PRIMARY KEY (UnitID),
+  CONSTRAINT Administrator_FK
+	FOREIGN KEY (Administrator)
+	REFERENCES "USER"(UserID)
+	ON DELETE CASCADE,
+  CONSTRAINT Belongs_To_FK
+    FOREIGN KEY (Belongs_To)
+	REFERENCES "BUSINESS_UNIT"(UnitID)
+	ON DELETE CASCADE
+);
+
+CREATE TABLE "COMPUTER"
+(
+  Name VARCHAR (32) NOT NULL,
+  OperatingSystem VARCHAR (255) NOT NULL,
+  ComputerID SERIAL NOT NULL,
+  OS_Version VARCHAR (64) NOT NULL,
+  UnitID INT NOT NULL,
+  PRIMARY KEY (ComputerID),
+  CONSTRAINT UnitID_FK
+    FOREIGN KEY (UnitID)
+	REFERENCES "BUSINESS_UNIT"(UnitID)
+	ON DELETE CASCADE,
+  UNIQUE (Name)
+);
+
+CREATE TABLE "RUNS"
+(
+  ComputerID INT NOT NULL,
+  AppID INT NOT NULL,
+  PRIMARY KEY (ComputerID, AppID),
+  CONSTRAINT ComputerID_FK
+    FOREIGN KEY (ComputerID)
+	REFERENCES "COMPUTER"(ComputerID)
+	ON DELETE CASCADE,
+  CONSTRAINT AppID_FK
+	FOREIGN KEY (AppID)
+	REFERENCES "APP"(AppID)
+	ON DELETE CASCADE
+);
+
+CREATE TABLE "COMPUTER_VULNERABILITIES"
+(
+  VulnID INT NOT NULL,
+  ComputerID INT NOT NULL,
+  PRIMARY KEY (VulnID, ComputerID),
+  CONSTRAINT VulnID_FK
+	FOREIGN KEY (VulnID)
+	REFERENCES "VULNERABILITY"(VulnID)
+	ON DELETE CASCADE,
+  CONSTRAINT ComputerID_FK
+	FOREIGN KEY (ComputerID)
+	REFERENCES "COMPUTER"(ComputerID)
+	ON DELETE CASCADE
+);
+
+/*
+  Insert Dummy Data into "APP" table
+*/
+
+INSERT INTO "APP" ("name","version") VALUES ('Facebook','1.0');
+INSERT INTO "APP" ("name","version") VALUES ('WhatsApp','1.6');
+INSERT INTO "APP" ("name","version") VALUES ('ScamBotApp','1.2');
+INSERT INTO "APP" ("name","version") VALUES ('GoogleAdsTracker','0.1');
+/*
+  Insert Dummy Data into "USER" table
+*/
+INSERT INTO "USER" (username,"role",firstname,lastname) VALUES ('sysadmin1','administrator','Tom','Hardy');
+INSERT INTO "USER" (username,"role",firstname,lastname) VALUES ('sysadmin2','administrator','Bob','Ross');
+INSERT INTO "USER" (username,"role",firstname,lastname) VALUES ('engineer','engineer','Tom','Holland');
+INSERT INTO "USER" (username,"role",firstname,lastname) VALUES ('analyst','analyst','Zendaya','Coleman');
+/*
+  Insert Dummy Data into "BUSINESS_UNIT" table
+*/
+
+INSERT INTO "BUSINESS_UNIT" ("name",administrator) VALUES ('Life Sciences', (SELECT "USER".userid from "USER" WHERE "USER".username = 'sysadmin1'));
+INSERT INTO "BUSINESS_UNIT" ("name",administrator) VALUES ('Physics', (SELECT "USER".userid from "USER" WHERE "USER".username = 'sysadmin2'));
+INSERT INTO "BUSINESS_UNIT" ("name",administrator) VALUES ('Library', (SELECT "USER".userid FROM "USER" WHERE "USER".username = 'sysadmin2'));
+
+/*
+  Insert Dummy Data into "COMPUTER" table
+*/
+
+INSERT INTO "COMPUTER" ("name",operatingsystem,os_version, unitid) VALUES ('My_Computer', 'Arch Linux', '5.10', (SELECT "BUSINESS_UNIT".unitid from "BUSINESS_UNIT" WHERE "BUSINESS_UNIT".name = 'Life Sciences'));
+INSERT INTO "COMPUTER" ("name",operatingsystem,os_version, unitid) VALUES ('LS_Server_01', 'CentOS', '8.0', (SELECT "BUSINESS_UNIT".unitid from "BUSINESS_UNIT" WHERE "BUSINESS_UNIT".name = 'Life Sciences'));
+INSERT INTO "COMPUTER" ("name",operatingsystem,os_version, unitid) VALUES ('LS_Server_02', 'MS BOB', '1.0', (SELECT "BUSINESS_UNIT".unitid from "BUSINESS_UNIT" WHERE "BUSINESS_UNIT".name = 'Life Sciences'));
+INSERT INTO "COMPUTER" ("name",operatingsystem,os_version, unitid) VALUES ('Lib_Server_01', 'Arch Linux', '5.05', (SELECT "BUSINESS_UNIT".unitid from "BUSINESS_UNIT" WHERE "BUSINESS_UNIT".name = 'Library'));
+INSERT INTO "COMPUTER" ("name",operatingsystem,os_version, unitid) VALUES ('Lib_Desk_01', 'Windows 10', '19043', (SELECT "BUSINESS_UNIT".unitid from "BUSINESS_UNIT" WHERE "BUSINESS_UNIT".name = 'Library'));
+INSERT INTO "COMPUTER" ("name",operatingsystem,os_version, unitid) VALUES ('Lib_Desk_02', 'Windows 10', '19043', (SELECT "BUSINESS_UNIT".unitid from "BUSINESS_UNIT" WHERE "BUSINESS_UNIT".name = 'Library'));
+
+/*
+  Insert Dummy Data into "VULNERABILITY" table
+*/
+
+INSERT INTO "VULNERABILITY" (severity, cve) VALUES (7.4, 'CVE-1993-2021');
+INSERT INTO "VULNERABILITY" (severity, cve) VALUES (3.6, 'CVE-2034-188983928');
+INSERT INTO "VULNERABILITY" (severity, cve) VALUES (4.2, 'CVE-2020-7892');
+
+/*
+  Insert Dummy Data into "APP_VULNERABILITY" table
+*/
+
+-- GoogleAdsTracker has multiple vulnerabilities
+INSERT INTO "APP_VULNERABILITIES" (appid, vulnid) VALUES ((SELECT "APP".appid FROM "APP" WHERE "APP".name = 'Facebook'), (SELECT "VULNERABILITY".vulnid FROM "VULNERABILITY" WHERE "VULNERABILITY".cve = 'CVE-1993-2021'));
+INSERT INTO "APP_VULNERABILITIES" (appid, vulnid) VALUES ((SELECT "APP".appid FROM "APP" WHERE "APP".name = 'ScamBotApp'), (SELECT "VULNERABILITY".vulnid FROM "VULNERABILITY" WHERE "VULNERABILITY".cve = 'CVE-2034-188983928'));
+INSERT INTO "APP_VULNERABILITIES" (appid, vulnid) VALUES ((SELECT "APP".appid FROM "APP" WHERE "APP".name = 'GoogleAdsTracker'), (SELECT "VULNERABILITY".vulnid FROM "VULNERABILITY" WHERE "VULNERABILITY".cve = 'CVE-2034-188983928'));
+INSERT INTO "APP_VULNERABILITIES" (appid, vulnid) VALUES ((SELECT "APP".appid FROM "APP" WHERE "APP".name = 'GoogleAdsTracker'), (SELECT "VULNERABILITY".vulnid FROM "VULNERABILITY" WHERE "VULNERABILITY".cve = 'CVE-2020-7892'));
+
+/*
+  Insert Dummy Data into "COMPUTER_VULNERABILITIES" table
+*/
+
+INSERT INTO "COMPUTER_VULNERABILITIES" (vulnid, computerid) VALUES ((SELECT "VULNERABILITY".vulnid FROM "VULNERABILITY" WHERE "VULNERABILITY".cve = 'CVE-1993-2021'), (SELECT "COMPUTER".computerid FROM "COMPUTER" WHERE "COMPUTER".name = 'My_Computer'));
+INSERT INTO "COMPUTER_VULNERABILITIES" (vulnid, computerid) VALUES ((SELECT "VULNERABILITY".vulnid FROM "VULNERABILITY" WHERE "VULNERABILITY".cve = 'CVE-1993-2021'), (SELECT "COMPUTER".computerid FROM "COMPUTER" WHERE "COMPUTER".name = 'Lib_Desk_01'));
+INSERT INTO "COMPUTER_VULNERABILITIES" (vulnid, computerid) VALUES ((SELECT "VULNERABILITY".vulnid FROM "VULNERABILITY" WHERE "VULNERABILITY".cve = 'CVE-2034-188983928'), (SELECT "COMPUTER".computerid FROM "COMPUTER" WHERE "COMPUTER".name = 'Lib_Desk_01'));
+INSERT INTO "COMPUTER_VULNERABILITIES" (vulnid, computerid) VALUES ((SELECT "VULNERABILITY".vulnid FROM "VULNERABILITY" WHERE "VULNERABILITY".cve = 'CVE-2034-188983928'), (SELECT "COMPUTER".computerid FROM "COMPUTER" WHERE "COMPUTER".name = 'Lib_Desk_02'));
+INSERT INTO "COMPUTER_VULNERABILITIES" (vulnid, computerid) VALUES ((SELECT "VULNERABILITY".vulnid FROM "VULNERABILITY" WHERE "VULNERABILITY".cve = 'CVE-2020-7892'), (SELECT "COMPUTER".computerid FROM "COMPUTER" WHERE "COMPUTER".name = 'Lib_Server_01'));
+INSERT INTO "COMPUTER_VULNERABILITIES" (vulnid, computerid) VALUES ((SELECT "VULNERABILITY".vulnid FROM "VULNERABILITY" WHERE "VULNERABILITY".cve = 'CVE-2034-188983928'), (SELECT "COMPUTER".computerid FROM "COMPUTER" WHERE "COMPUTER".name = 'Lib_Server_01'));
+
+/*
+  Insert Dummy Data into "RUNS" table
+*/
+
+INSERT INTO "RUNS" (computerid, appid) VALUES ((SELECT "COMPUTER".computerid FROM "COMPUTER" WHERE "COMPUTER".name = 'My_Computer'), (SELECT "APP".appid FROM "APP" WHERE "APP".name = 'Facebook'));
+INSERT INTO "RUNS" (computerid, appid) VALUES ((SELECT "COMPUTER".computerid FROM "COMPUTER" WHERE "COMPUTER".name = 'Lib_Server_01'), (SELECT "APP".appid FROM "APP" WHERE "APP".name = 'GoogleAdsTracker'));
+INSERT INTO "RUNS" (computerid, appid) VALUES ((SELECT "COMPUTER".computerid FROM "COMPUTER" WHERE "COMPUTER".name = 'Lib_Desk_01'), (SELECT "APP".appid FROM "APP" WHERE "APP".name = 'ScamBotApp'));
+INSERT INTO "RUNS" (computerid, appid) VALUES ((SELECT "COMPUTER".computerid FROM "COMPUTER" WHERE "COMPUTER".name = 'Lib_Desk_01'), (SELECT "APP".appid FROM "APP" WHERE "APP".name = 'Facebook'));
+INSERT INTO "RUNS" (computerid, appid) VALUES ((SELECT "COMPUTER".computerid FROM "COMPUTER" WHERE "COMPUTER".name = 'Lib_Desk_02'), (SELECT "APP".appid FROM "APP" WHERE "APP".name = 'ScamBotApp'));
+
+/* ----- Vulnerability Count For All Business Units ----- */
+DROP VIEW IF EXISTS all_bu_vulnerabilities_count;
+DROP VIEW IF EXISTS all_bu_vulnerabilities_over_5;
+DROP VIEW IF EXISTS all_computer_vulnerabilities;
+DROP VIEW IF EXISTS all_bu_computers;
+
+--Used to take all computer ids and pair them with each of their respective vulnerabilities
+CREATE VIEW all_computer_vulnerabilities AS
+SELECT computerid, "VULNERABILITY".vulnid, severity, cve FROM "VULNERABILITY" INNER JOIN "COMPUTER_VULNERABILITIES" ON "VULNERABILITY".vulnid = "COMPUTER_VULNERABILITIES".vulnid;
+
+--Used to get all computers belonging to each business unit
+CREATE VIEW all_bu_computers AS
+SELECT "COMPUTER".unitid, "BUSINESS_UNIT".name, administrator, computerid FROM "BUSINESS_UNIT" INNER JOIN "COMPUTER" ON "BUSINESS_UNIT".unitid = "COMPUTER".unitid;
+
+--Used to get a count of how many vulnerabilities in each business unit are greater than 5
+CREATE VIEW all_bu_vulnerabilities_over_5 AS
+SELECT unitid, COUNT(vulnid) 
+FROM all_bu_computers 
+INNER JOIN all_computer_vulnerabilities ON all_bu_computers.computerid = all_computer_vulnerabilities.computerid 
+WHERE severity > 5 
+GROUP BY unitid;
+
+--Used to show all business units, even those which have no vulnerabilities. This is the final view for this part.
+CREATE VIEW all_bu_vulnerabilities_count AS
+SELECT name AS "Business Unit", COALESCE(count, 0) AS "Number of Serious Vulnerabilities" 
+FROM all_bu_vulnerabilities_over_5 
+RIGHT JOIN "BUSINESS_UNIT" ON "BUSINESS_UNIT".unitid = all_bu_vulnerabilities_over_5.unitid;
+
+/* ----- Vulnerabilities in a single Business Unit ----- */
+DROP VIEW IF EXISTS full_bu_vulns;
+DROP VIEW IF EXISTS bu_vulnerabilities;
+DROP VIEW IF EXISTS bu_computer_vulns;
+
+--Used to add the vulnerability id to the COMPUTER table 
+CREATE VIEW bu_computer_vulns AS
+SELECT name, operatingsystem, "COMPUTER".computerid, os_version, unitid, vulnid FROM "COMPUTER" INNER JOIN "COMPUTER_VULNERABILITIES" ON "COMPUTER".computerid = "COMPUTER_VULNERABILITIES".computerid;
+
+--Used to return the information we care about: the cve, severity, computer name, and os info for each business unit
+CREATE VIEW bu_vulnerabilities AS
+SELECT cve, severity, name AS computername, operatingsystem AS os, os_version, unitid FROM bu_computer_vulns
+INNER JOIN "VULNERABILITY" ON bu_computer_vulns.vulnid = "VULNERABILITY".vulnid
+ORDER BY severity DESC, computername;
+
+--Used to add the actual business unit name to the above view
+CREATE VIEW full_bu_vulns AS
+SELECT cve, severity, computername, os, os_version, name AS "Business Unit", bu_vulnerabilities.unitid FROM bu_vulnerabilities
+INNER JOIN "BUSINESS_UNIT" ON bu_vulnerabilities.unitid = "BUSINESS_UNIT".unitid;
+
+
+/* ----- Lists all apps and vulnerabilities for all computers ----- */
+DROP VIEW IF EXISTS all_computer_apps_vulns;
+DROP VIEW IF EXISTS all_computer_vulnids;
+DROP VIEW IF EXISTS all_computer_apps;
+DROP VIEW IF EXISTS all_computer_appids;
+
+--Used to add the appid to a computer
+CREATE VIEW all_computer_appids AS 
+SELECT name "Computer Name",OS_version,appid from "COMPUTER" 
+JOIN "RUNS" on "COMPUTER".computerid = "RUNS".computerid
+ORDER BY "Computer Name";
+
+--Used to list the Apps on all computers
+CREATE VIEW all_computer_apps AS 
+SELECT all_computer_appids."Computer Name", "APP".name "App Name", version "App Version", "APP".appid FROM all_computer_appids 
+JOIN "APP" ON all_computer_appids.appid = "APP".appid 
+ORDER BY "Computer Name";
+
+--Used to add the vulnid to all computers
+CREATE VIEW all_computer_vulnids AS
+SELECT "Computer Name", "App Name", "App Version", vulnid FROM all_computer_apps
+JOIN "APP_VULNERABILITIES" ON all_computer_apps.appid = "APP_VULNERABILITIES".appid
+ORDER BY "Computer Name";
+
+--Used to list all Apps and Vulnerabilities on all computers
+CREATE VIEW all_computer_apps_vulns AS 
+SELECT "Computer Name", "App Name", "App Version",cve,severity FROM all_computer_vulnids 
+JOIN "VULNERABILITY" on "VULNERABILITY".vulnid = all_computer_vulnids.vulnid 
+ORDER BY severity DESC, "Computer Name";
+
+DROP FUNCTION IF EXISTS select_all_computer_app_vulns;
+DROP FUNCTION IF EXISTS select_all_bu_vulns_count;
+DROP FUNCTION IF EXISTS select_all_bu_info;
+
+/* ----- Function to select all app vulnerabilities associated with specified computers ----- */
+CREATE FUNCTION select_all_computer_app_vulns(
+	computers text
+)
+RETURNS TABLE (
+	"Computer Name" varchar(32),
+	"App Name" varchar(255),
+	"App Version" varchar(32),
+	"cve" varchar(32),
+	"severity" float
+)
+LANGUAGE plpgsql
+AS $$
+DECLARE comp_names varchar[];
+BEGIN
+-- $1 here means the first variable, which is also the only variable in this case (computers)
+comp_names = string_to_array($1,',');
+RETURN QUERY SELECT all_computer_apps_vulns."Computer Name", all_computer_apps_vulns."App Name", all_computer_apps_vulns."App Version", all_computer_apps_vulns."cve", all_computer_apps_vulns."severity" FROM all_computer_apps_vulns WHERE all_computer_apps_vulns."Computer Name" LIKE ANY (comp_names);
+END;$$;
+
+-- How to run the above function:
+-- SELECT * FROM "select_all_computer_app_vulns"('Lib_Server_01,Lib_Desk_01,%');
+
+
+/* ----- Function to count all vulnerabilities in each business unit ----- */
+CREATE FUNCTION select_all_bu_vulns_count(
+	BUs text
+)
+RETURNS TABLE (
+	"Business Unit" varchar(255),
+	"Number of Serious Vulnerabilities" bigint
+)
+LANGUAGE plpgsql
+AS $$
+DECLARE bu_names varchar[];
+BEGIN
+bu_names = string_to_array($1,',');
+RETURN QUERY SELECT all_bu_vulnerabilities_count."Business Unit", all_bu_vulnerabilities_count."Number of Serious Vulnerabilities" FROM all_bu_vulnerabilities_count WHERE all_bu_vulnerabilities_count."Business Unit" LIKE ANY (bu_names);
+END;$$;
+
+-- How to run the above function:
+-- SELECT * FROM select_all_bu_vulns_count('%');
+
+/* ----- Function to select all information from specified business units ----- */
+CREATE FUNCTION select_all_bu_info(
+	BUs text
+)
+RETURNS TABLE (
+	"cve" varchar(32),
+	"severity" float,
+	"Computer Name" varchar(32),
+	"Operating System" varchar(255),
+	"OS_Version" varchar(64),
+	"Business Unit" varchar(255)
+)
+LANGUAGE plpgsql
+AS $$
+DECLARE bu_names varchar[];
+BEGIN
+bu_names = string_to_array($1,',');
+RETURN QUERY SELECT full_bu_vulns.cve, full_bu_vulns.severity, full_bu_vulns.computername, full_bu_vulns.os, full_bu_vulns.os_version, full_bu_vulns."Business Unit" FROM full_bu_vulns WHERE full_bu_vulns."Business Unit" LIKE ANY (bu_names);
+END;$$;
+
+-- How to run the above function:
+-- SELECT * FROM select_all_bu_info('Life Sciences,Library');
+
+GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO lambda_access;
