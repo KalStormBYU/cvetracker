@@ -13,6 +13,7 @@ list_parser = Cmd2ArgumentParser()
 list_subparsers = list_parser.add_subparsers(title='subcommands', help='subcommand help')
 
 parser_computer = list_subparsers.add_parser('computers', help='computer help')
+parser_bu = list_subparsers.add_parser('Business Units', help='Business Unit help')
 
 
 
@@ -39,6 +40,7 @@ class cvetracker(Cmd):
             self.poutput("Sorry, can't access the database. You are not logged in.")
         else:
             self.poutput("Welcome to the database!")
+            self.poutput('You are a Security Analyst')
             self.poutput("What would you like to do?")
 
     def do_login(self, args):
@@ -53,6 +55,7 @@ class cvetracker(Cmd):
             data = {'values': ['%']}
             headers = {'testing': '123abc'}
             response = requests.get('https://to36jhw9b1.execute-api.us-west-2.amazonaws.com/default/all_computers_apps_vulns', auth=auth, headers=headers, json=data)
+            self.poutput('Here is your data')
             self.poutput(response.json())
         else:
             self.poutput("You must log in to view this data.")
