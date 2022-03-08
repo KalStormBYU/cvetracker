@@ -5,6 +5,7 @@ import argparse
 from cmd2 import Cmd, with_argparser, Cmd2ArgumentParser
 import cmd2
 from aws_requests_auth.aws_auth import AWSRequestsAuth
+import pandas as pd
 
 loggedIn = False
 auth = 0
@@ -56,7 +57,12 @@ class cvetracker(Cmd):
             headers = {'testing': '123abc'}
             response = requests.get('https://to36jhw9b1.execute-api.us-west-2.amazonaws.com/default/all_computers_apps_vulns', auth=auth, headers=headers, json=data)
             self.poutput('Here is your data')
-            self.poutput(response.json())
+            tabledata = response.json()
+            l1,l2 = len(tabledata), len(tabledata[0])
+            df = pd.DataFrame(tabledata, index=['']*l1, columns=['']*l2)
+            df.set_axis(['COMPUTER','APP','VERSION','CVE','SEVERITY'],axis=1,inplace=True)
+            self.poutput(df.head())
+            self.poutput('\n')
         else:
             self.poutput("You must log in to view this data.")
 
