@@ -61,7 +61,7 @@ ORDER BY "Computer Name";
 
 --Used to list the Apps on all computers
 CREATE VIEW all_computer_apps AS 
-SELECT all_computer_app_ids."Computer Name", computerid, "APP".name "App Name", version "App Version", "APP".appid FROM all_computer_app_ids 
+SELECT all_computer_app_ids."Computer Name", all_computer_app_ids."computerid", "APP".name "App Name", version "App Version", "APP".appid FROM all_computer_app_ids 
 JOIN "APP" ON all_computer_app_ids.appid = "APP".appid 
 ORDER BY "Computer Name";
 
