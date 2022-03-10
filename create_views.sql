@@ -51,18 +51,18 @@ INNER JOIN "BUSINESS_UNIT" ON bu_vulnerabilities.unitid = "BUSINESS_UNIT".unitid
 DROP VIEW IF EXISTS all_computer_apps_vulns;
 DROP VIEW IF EXISTS all_computer_vulnids;
 DROP VIEW IF EXISTS all_computer_apps;
-DROP VIEW IF EXISTS all_computer_appids;
+DROP VIEW IF EXISTS all_computer_app_ids;
 
 --Used to add the appid to a computer
-CREATE VIEW all_computer_appids AS 
-SELECT name "Computer Name",OS_version,appid from "COMPUTER" 
+CREATE VIEW all_computer_app_ids AS 
+SELECT name "Computer Name",computerid,OS_version,appid from "COMPUTER" 
 JOIN "RUNS" on "COMPUTER".computerid = "RUNS".computerid
 ORDER BY "Computer Name";
 
 --Used to list the Apps on all computers
 CREATE VIEW all_computer_apps AS 
-SELECT all_computer_appids."Computer Name", "APP".name "App Name", version "App Version", "APP".appid FROM all_computer_appids 
-JOIN "APP" ON all_computer_appids.appid = "APP".appid 
+SELECT all_computer_app_ids."Computer Name", computerid, "APP".name "App Name", version "App Version", "APP".appid FROM all_computer_app_ids 
+JOIN "APP" ON all_computer_app_ids.appid = "APP".appid 
 ORDER BY "Computer Name";
 
 --Used to add the vulnid to all computers
