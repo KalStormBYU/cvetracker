@@ -55,7 +55,7 @@ DROP VIEW IF EXISTS all_computer_app_ids;
 
 --Used to add the appid to a computer
 CREATE VIEW all_computer_app_ids AS 
-SELECT name "Computer Name",computerid,OS_version,appid from "COMPUTER" 
+SELECT name "Computer Name","COMPUTER".computerid,OS_version,appid from "COMPUTER" 
 JOIN "RUNS" on "COMPUTER".computerid = "RUNS".computerid
 ORDER BY "Computer Name";
 
