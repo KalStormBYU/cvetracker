@@ -100,3 +100,246 @@ Analysts act similar to Sysadmins, but with no restriction on owning Business Un
     * Example Input: N/A
     * Action: SELECT all Business Units, and list the number of computers with vulnerabilities having a severity level over 5 in each business unit.
     * Response: A table. Columns: [Business Unit, number of serious vulnerabilities]
+
+## Engineer APIs
+
+Engineer APIs are much more complex, because Engineers can modify existing data. Because of this, there are 4 endpoints which have 4 methods each. Each method will be treated like a different endpoint, but notice that the endpoint names are often the same. To access them, use the exact same URL, but with a different method.
+
+* **engineer_list_all_info_by_bu**:
+    * Request Type: GET
+    * Input: values (string, wildcard: %): corresponds to a computer name. This API is an unfortunate misnomer, but it is very difficult to change now without risking breaking something.
+    * Example Input:  
+    ```
+    {
+     "values": "Lib_%"   
+    }
+    ```
+    * Action: SELECT all computers matching the value string with vulnerabilities, along with the vulnerabilities. Computers without vulnerabilities do not show up.
+    * Response: A table. Columns: [Computer Name, App Name, App Version, CVE Name, Severity]
+* **engineer_access_computers_post**:
+    * Request Type: POST
+    * Input:
+        * name (string): corresponds to the new computer name.
+        * operatingsystem (string): corresponds to the new computer os.
+        * os_version (string): corresponds to the new computer os version.
+        * unitid (int): corresponds to the new computer's Business Unit.
+    * Example Input:  
+    ```
+    {
+        "name": "DeleteMe",
+        "operatingsystem": "Windows XP",
+        "os_version": "1010",
+        "unitid": 3
+    }
+    ```
+    * Action: INSERT a new computer with the above values.
+    * Response: None. (Technically a message saying the query succeeded)
+* **engineer_access_computers_get**:
+    * Request Type: GET
+    * Input: values (string, wildcard: %): corresponds to a computer name.
+    * Example Input:  
+    ```
+    {
+     "values": "Lib_%"   
+    }
+    ```
+    * Action: SELECT all computers matching the value string.
+    * Response: A table. Columns: [Computer Name, OS, Computer ID, OS Version, Business Unit ID]
+* **engineer_access_computers_put**:
+    * Request Type: PUT
+    * Input:
+        * name (string): corresponds to the updated computer name.
+        * operatingsystem (string): corresponds to the updated computer os.
+        * os_version (string): corresponds to the updated computer os version.
+        * unitid (int): corresponds to the updated computer's Business Unit.
+        * id (int): corresponds to the computer id matching the computer to update.
+    * Example Input:  
+    ```
+    {
+        "name": "Updated_DeleteMe",
+        "operatingsystem": "Linux",
+        "os_version": "5.16.3",
+        "unitid": 3,
+        "id": 7
+    }
+    ```
+    * Action: UPDATE a computer with the above values.
+    * Response: None. (Technically a message saying the query succeeded)
+* **engineer_access_computers_delete**:
+    * Request Type: DELETE
+    * Input:
+        * id (int): corresponds to the id of the computer to delete.
+    * Example Input:  
+    ```
+    {
+        "id": 7
+    }
+    ```
+    * Action: DELETE the computer with the above id.
+    * Response: None. (Technically a message saying the query succeeded)
+* **engineer_access_bus_post**:
+    * Request Type: POST
+    * Input:
+        * name (string): corresponds to the new Business Unit name.
+        * administrator (int): corresponds to the new Business Unit's admin. Note that a new admin must be added before a new Business Unit with that admin.
+    * Example Input:  
+    ```
+    {
+        "name": "JSB",
+        "administrator": 2
+    }
+    ```
+    * Action: INSERT a new Business Unit with the above values.
+    * Response: None. (Technically a message saying the query succeeded)
+* **engineer_access_bus_get**:
+    * Request Type: GET
+    * Input: values (string, wildcard: %): corresponds to a Business Unit name.
+    * Example Input:  
+    ```
+    {
+     "values": "%"   
+    }
+    ```
+    * Action: SELECT all Business Units matching the value string.
+    * Response: A table. Columns: [Business Unit Name, Business Unit ID, Administrator ID, Belongs To ID]
+* **engineer_access_bus_put**:
+    * Request Type: PUT
+    * Input:
+        * name (string): corresponds to the updated Business Unit name.
+        * administrator (int): corresponds to the updated Business Unit's admin. Note that a new admin must be added before an updated Business Unit can be assigned to that admin.
+        * id (int): corresponds to the Business Unit ID of the Business Unit to update.
+    * Example Input:  
+    ```
+    {
+        "name": "Updated_JSB",
+        "administrator": 2,
+        "id": 4
+    }
+    ```
+    * Action: UPDATE a Business Unit with the above values.
+    * Response: None. (Technically a message saying the query succeeded)
+* **engineer_access_bus_delete**:
+    * Request Type: DELETE
+    * Input:
+        * id (int): corresponds to the id of the Business Unit to delete.
+    * Example Input:  
+    ```
+    {
+        "id": 7
+    }
+    ```
+    * Action: DELETE the Business Unit with the above id.
+    * Response: None. (Technically a message saying the query succeeded)
+* **engineer_access_users_post**:
+    * Request Type: POST
+    * Input:
+        * username (string): corresponds to the new user's username.
+        * role (string): corresponds to the new user's role.
+        * firstname (string): corresponds to the new user's first name.
+        * lastname (string): corresponds to the new user's last name.
+    * Example Input:  
+    ```
+    {
+        "username": "DeleteMe",
+        "role": "engineer",
+        "firstname": "Delete",
+        "lastname": "Me"
+    }
+    ```
+    * Action: INSERT a new user with the above values.
+    * Response: None. (Technically a message saying the query succeeded)
+* **engineer_access_users_get**:
+    * Request Type: GET
+    * Input: values (string, wildcard: %): corresponds to a user name.
+    * Example Input:  
+    ```
+    {
+     "values": "%"   
+    }
+    ```
+    * Action: SELECT all users matching the value string.
+    * Response: A table. Columns: [Username, Role, First Name, Last Name, User ID]
+* **engineer_access_users_put**:   
+    * Request Type: PUT
+    * Input:
+        * username (string): corresponds to the updated user's username.
+        * role (string): corresponds to the updated user's role.
+        * firstname (string): corresponds to the updated user's first name.
+        * lastname (string): corresponds to the updated user's last name.
+        * 
+    * Example Input:  
+    ```
+    {
+        "username": "Updated_DeleteMe",
+        "role": "analyst",
+        "firstname": "Delete",
+        "lastname": "Me",
+        "id": 5
+    }
+    ```
+    * Action: UPDATE a user with the above values.
+    * Response: None. (Technically a message saying the query succeeded)
+* **engineer_access_users_delete**:
+    * Request Type: DELETE
+    * Input:
+        * id (int): corresponds to the id of the user to delete.
+    * Example Input:  
+    ```
+    {
+        "id": 7
+    }
+    ```
+    * Action: DELETE the user with the above id.
+    * Response: None. (Technically a message saying the query succeeded)
+* **engineer_access_cves_post**:
+    * Request Type: POST
+    * Input:
+        * cve (string): corresponds to the new CVE name.
+        * severity (float/double): corresponds to the new CVE vulnerability.
+    * Example Input:  
+    ```
+    {
+        "cve": "CVE-2001-3445",
+        "severity": 3.2
+    }
+    ```
+    * Action: INSERT a new vulnerability with the above values.
+    * Response: None. (Technically a message saying the query succeeded)
+* **engineer_access_cves_get**:
+    * Request Type: GET
+    * Input: values (string, wildcard: %): corresponds to a CVE name.
+    * Example Input:  
+    ```
+    {
+     "values": "%"   
+    }
+    ```
+    * Action: SELECT all CVEs/vulnerabilities matching the value string.
+    * Response: A table. Columns: [CVE Name, Severity, Vulnerability ID]
+* **engineer_access_cves_put**:
+    * Request Type: PUT
+    * Input:
+        * cve (string): corresponds to the updated CVE name.
+        * severity (float/double): corresponds to the updated CVE vulnerability.
+    * Example Input:  
+    ```
+    {
+        "cve": "Updated-CVE-2001-3445",
+        "severity": 6.4,
+        "id": 4
+    }
+    ```
+    * Action: UPDATE a vulnerability with the above values.
+    * Response: None. (Technically a message saying the query succeeded)
+* **engineer_access_cves_delete**:
+    * Request Type: DELETE
+    * Input:
+        * id (int): corresponds to the id of the vulnerability/CVE to delete.
+    * Example Input:  
+    ```
+    {
+        "id": 7
+    }
+    ```
+    * Action: DELETE the vulnerability/CVE with the above id.
+    * Response: None. (Technically a message saying the query succeeded)
