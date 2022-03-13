@@ -103,7 +103,7 @@ class cvetracker(Cmd):
         if(loggedIn):
             if role == 'sysadmin1':
                 data = {'id': args.b}
-                response = requests.get('https://imbp521xa8.execute-api.us-west-2.amazonaws.com/sysadmin1_all_computers_in_one_bu', auth=auth, json=data)
+                response = requests.get(method + url_sysadmin1 + '/sysadmin1_all_computers_in_one_bu', auth=auth, json=data)
                 tabledata = response.json()
                 l1,l2 = len(tabledata), len(tabledata[0])
                 df = pd.DataFrame(tabledata, index=['']*l1, columns=['']*l2)
@@ -113,7 +113,7 @@ class cvetracker(Cmd):
                 self.poutput('\n')
             elif role == 'sysadmin2':
                 data = {'id': args.b}
-                response = requests.get('https://fcfwijojda.execute-api.us-west-2.amazonaws.com/sysadmin2_all_computers_in_one_bu', auth=auth, json=data)
+                response = requests.get(method + url_sysadmin2 +'/sysadmin2_all_computers_in_one_bu', auth=auth, json=data)
                 self.poutput('Here is your data')
                 tabledata = response.json()
                 l1,l2 = len(tabledata), len(tabledata[0])
@@ -124,7 +124,7 @@ class cvetracker(Cmd):
                 self.poutput('\n')
             elif role == 'analyst':
                 data = {'values': args.severity}
-                response = requests.get('https://cs4pjw5qb9.execute-api.us-west-2.amazonaws.com/analyst_list_all_info_by_severity', auth=auth, json=data)
+                response = requests.get(method + url_analyst + '/analyst_list_all_info_by_severity', auth=auth, json=data)
                 self.poutput('Here is your data')
                 tabledata = response.json()
                 l1,l2 = len(tabledata), len(tabledata[0])
@@ -143,7 +143,7 @@ class cvetracker(Cmd):
     def list_bus(self, args):
         if(loggedIn):
             if role == 'sysadmin1':
-                response = requests.get("https://imbp521xa8.execute-api.us-west-2.amazonaws.com/sysadmin1_all_bus_user_manages", auth=auth)
+                response = requests.get(method + url_sysadmin1 + "/sysadmin1_all_bus_user_manages", auth=auth)
                 self.poutput("Here are the Business Units you manage:")
                 tabledata = response.json()
                 l1,l2 = len(tabledata), len(tabledata[0])
@@ -152,7 +152,7 @@ class cvetracker(Cmd):
                 self.poutput(df.head())
                 self.poutput('\n')
             elif role == 'sysadmin2':
-                response = requests.get("https://fcfwijojda.execute-api.us-west-2.amazonaws.com/sysadmin2_all_bus_user_manages", auth=auth)
+                response = requests.get(method + url_sysadmin2 + "/sysadmin2_all_bus_user_manages", auth=auth)
                 self.poutput("Here are the Business Units you manage:")
                 tabledata = response.json()
                 l1,l2 = len(tabledata), len(tabledata[0])
@@ -162,7 +162,7 @@ class cvetracker(Cmd):
                 self.poutput('\n')
             elif role == 'analyst':
                 data = {'values': [str(args.b)]}
-                response = requests.get("https://cs4pjw5qb9.execute-api.us-west-2.amazonaws.com/analyst_list_all_info_by_bu", auth=auth, json=data)
+                response = requests.get(method + url_analyst + "/analyst_list_all_info_by_bu", auth=auth, json=data)
                 self.poutput("Here are the vulnerable computers in the business unit")
                 tabledata = response.json()
                 l1,l2 = len(tabledata), len(tabledata[0])
@@ -172,7 +172,7 @@ class cvetracker(Cmd):
                 self.poutput('\n')
             elif role == 'engineer':
                 data = {'values': [str(args.b)]}
-                response = requests.get("https://7va75w0cr7.execute-api.us-west-2.amazonaws.com/engineer_access_bus", auth=auth, json=data)
+                response = requests.get(method + url_engineer + "/engineer_access_bus", auth=auth, json=data)
                 self.poutput("Here are the Business Units you asked for:")
                 tabledata = response.json()
                 l1,l2 = len(tabledata), len(tabledata[0])
@@ -221,19 +221,6 @@ def awsLogin(key, secret):
         role = "analyst"
     elif resulting_url == login_list[3]:
         role = "engineer"
-    #data = {'values': ['%']}
-    #headers = {'testing': '123abc'}
-    #response = requests.get('https://to36jhw9b1.execute-api.us-west-2.amazonaws.com/default/all_computers_apps_vulns', auth=auth, headers=headers, json=data)
-    #response = requests.get('https://to36jhw9b1.execute-api.us-west-2.amazonaws.com/default/login', auth=auth, headers=headers)
-    #print(url_analyst + '/login')
-    #response = requests.get(method + url_analyst + "/login", auth=auth, headers=headers)
-    #if response.status_code == requests.codes.ok:
-        #loggedIn = True
-        #print("You are now logged in!")
-    #else:
-        #print("Unfortunately we could not log you in")
-        #print(response.status_code)
-        #print(response.text)
 
 
 ###################
