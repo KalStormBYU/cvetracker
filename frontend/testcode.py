@@ -18,7 +18,12 @@ import pandas as pd
 
 loggedIn = False
 auth = 0
-role = "analyst"
+role = ""
+method = "https://"
+url_sysadmin1 = "imbp521xa8.execute-api.us-west-2.amazonaws.com"
+url_sysadmin2 = "fcfwijojda.execute-api.us-west-2.amazonaws.com"
+url_analyst = "cs4pjw5qb9.execute-api.us-west-2.amazonaws.com"
+url_engineer = "7va75w0cr7.execute-api.us-west-2.amazonaws.com"
 
 
 ###############################
@@ -64,8 +69,7 @@ class cvetracker(Cmd):
             self.poutput("Sorry, can't access the database. You are not logged in.")
         else:
             self.poutput("Welcome to the database!")
-            self.poutput('You are a Security Analyst')
-            self.poutput("What would you like to do?")
+            self.poutput(f'Your Role is {role.upper()}')
 
     def do_login(self, args):
         """Login to AWS account"""
@@ -191,12 +195,19 @@ def awsLogin(key, secret):
     global loggedIn
     global auth
     global role
-    """
-    login_list = ['url_1', 'url_2', 'url_3', 'url_4']
+
+
+    login_list = [url_sysadmin1, url_sysadmin2, url_analyst, url_engineer]
     headers = {'testing': '123abc'}
     resulting_url = ''
     for i in login_list:
-        response = requests.get(i, auth=auth, headers=headers)
+        auth = AWSRequestsAuth(aws_access_key=key,
+                aws_secret_access_key=secret,
+                #aws_host='to36jhw9b1.execute-api.us-west-2.amazonaws.com',
+                aws_host=i,
+                aws_region='us-west-2',
+                aws_service='execute-api')
+        response = requests.get(method + i + '/login', auth=auth, headers=headers)
         if response.status_code == requests.codes.ok:
             loggedIn = True
             print("You are now logged in!")
@@ -210,21 +221,19 @@ def awsLogin(key, secret):
         role = "analyst"
     elif resulting_url == login_list[3]:
         role = "engineer"
-        """
-    auth = AWSRequestsAuth(aws_access_key=key,
-            aws_secret_access_key=secret,
-            aws_host='to36jhw9b1.execute-api.us-west-2.amazonaws.com',
-            aws_region='us-west-2',
-            aws_service='execute-api')
-    data = {'values': ['%']}
-    headers = {'testing': '123abc'}
+    #data = {'values': ['%']}
+    #headers = {'testing': '123abc'}
     #response = requests.get('https://to36jhw9b1.execute-api.us-west-2.amazonaws.com/default/all_computers_apps_vulns', auth=auth, headers=headers, json=data)
-    response = requests.get('https://to36jhw9b1.execute-api.us-west-2.amazonaws.com/default/login', auth=auth, headers=headers)
-    if response.status_code == requests.codes.ok:
-        loggedIn = True
-        print("You are now logged in!")
-    else:
-        print("Unfortunately we could not log you in")
+    #response = requests.get('https://to36jhw9b1.execute-api.us-west-2.amazonaws.com/default/login', auth=auth, headers=headers)
+    #print(url_analyst + '/login')
+    #response = requests.get(method + url_analyst + "/login", auth=auth, headers=headers)
+    #if response.status_code == requests.codes.ok:
+        #loggedIn = True
+        #print("You are now logged in!")
+    #else:
+        #print("Unfortunately we could not log you in")
+        #print(response.status_code)
+        #print(response.text)
 
 
 ###################
