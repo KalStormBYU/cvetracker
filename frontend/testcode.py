@@ -41,6 +41,9 @@ parser_computer.add_argument('-s','--severity', type=float, help="Vulnerability 
 parser_bu = list_subparsers.add_parser('business_units', help='business_unit help')
 parser_bu.add_argument('-b', type=str, default='%', help='Business Unit name')
 
+parser_vuln = list_subparsers.add_parser('vulns', help='vulnerability help')
+
+parser_apps = list_subparsers.add_parser('apps', help='application help')
 
 ######################################
 # Define Class for interactive shell #
@@ -102,26 +105,55 @@ class cvetracker(Cmd):
     def list_computer(self, args):
         if(loggedIn):
             if role == 'sysadmin1':
-                data = {'id': args.b}
-                response = requests.get(method + url_sysadmin1 + '/sysadmin1_all_computers_in_one_bu', auth=auth, json=data)
+                response = requests.get(method + url_sysadmin1 + "/sysadmin1_all_bus_user_manages", auth=auth)
+                self.poutput("Here are the Business Units you manage:")
                 tabledata = response.json()
                 l1,l2 = len(tabledata), len(tabledata[0])
                 df = pd.DataFrame(tabledata, index=['']*l1, columns=['']*l2)
-                df.set_axis(['COMPUTER NAME','COMPUTER ID'],axis=1,inplace=True)
-                self.poutput('Here are the computers you requested:')
                 self.poutput(df.head())
                 self.poutput('\n')
+                b_id = input("Which Business Unit would you like to view? (ID NUMBER): ")
+                try:
+                    data = {'id': int(b_id)}
+                    response = requests.get(method + url_sysadmin1 + '/sysadmin1_all_computers_in_one_bu', auth=auth, json=data)
+                    tabledata = response.json()
+                    l1,l2 = len(tabledata), len(tabledata[0])
+                    df = pd.DataFrame(tabledata, index=['']*l1, columns=['']*l2)
+                    df.set_axis(['COMPUTER NAME','COMPUTER ID'],axis=1,inplace=True)
+                    self.poutput('Here are the computers you requested:')
+                    self.poutput(df.head())
+                    self.poutput('\n')
+                except ValueError:
+                    print("Please enter a valid integer")
+                except KeyError:
+                    print("You do not have access to that business unit")
+                except IndexError:
+                    print("The business unit you requested is empty.")
             elif role == 'sysadmin2':
-                data = {'id': args.b}
-                response = requests.get(method + url_sysadmin2 +'/sysadmin2_all_computers_in_one_bu', auth=auth, json=data)
-                self.poutput('Here is your data')
+                response = requests.get(method + url_sysadmin2 + "/sysadmin2_all_bus_user_manages", auth=auth)
+                self.poutput("Here are the Business Units you manage:")
                 tabledata = response.json()
                 l1,l2 = len(tabledata), len(tabledata[0])
                 df = pd.DataFrame(tabledata, index=['']*l1, columns=['']*l2)
-                df.set_axis(['COMPUTER NAME','COMPUTER ID'],axis=1,inplace=True)
-                self.poutput('Here are the computers you requested:')
                 self.poutput(df.head())
                 self.poutput('\n')
+                b_id = input("Which Business Unit would you like to view? (ID NUMBER): ")
+                try:
+                    data = {'id': int(b_id)}
+                    response = requests.get(method + url_sysadmin2 + '/sysadmin2_all_computers_in_one_bu', auth=auth, json=data)
+                    tabledata = response.json()
+                    l1,l2 = len(tabledata), len(tabledata[0])
+                    df = pd.DataFrame(tabledata, index=['']*l1, columns=['']*l2)
+                    df.set_axis(['COMPUTER NAME','COMPUTER ID'],axis=1,inplace=True)
+                    self.poutput('Here are the computers you requested:')
+                    self.poutput(df.head())
+                    self.poutput('\n')
+                except ValueError:
+                    print("Please enter a valid integer")
+                except KeyError:
+                    print("You do not have access to that business unit")
+                except IndexError:
+                    print("The business unit you requested is empty.")
             elif role == 'analyst':
                 data = {'values': args.severity}
                 response = requests.get(method + url_analyst + '/analyst_list_all_info_by_severity', auth=auth, json=data)
@@ -133,11 +165,8 @@ class cvetracker(Cmd):
                 self.poutput('Here are the computers you requested:')
                 self.poutput(df.head())
                 self.poutput('\n')
-
-
         else:
             self.poutput("You must log in to view this data.")
-
     parser_computer.set_defaults(func=list_computer)
 
     def list_bus(self, args):
@@ -177,14 +206,152 @@ class cvetracker(Cmd):
                 tabledata = response.json()
                 l1,l2 = len(tabledata), len(tabledata[0])
                 df = pd.DataFrame(tabledata, index=['']*l1, columns=['']*l2)
-                df.set_axis(['BUSINESS UNIT', 'BUSINESS UNIT ID', 'ADMIN ID', 'BELONGs TO'],axis=1,inplace=True)
+                df.set_axis(['BUSINESS UNIT', 'BUSINESS UNIT ID', 'ADMIN ID', 'BELONGS TO'],axis=1,inplace=True)
                 self.poutput(df.head())
                 self.poutput('\n')
         else:
             self.poutput("You must log in to view this data.")
     parser_bu.set_defaults(func=list_bus)
 
+    def list_vulns(self, args):
+        if(loggedIn):
+            if role == 'sysadmin1':
+                response = requests.get(method + url_sysadmin1 + "/sysadmin1_all_bus_user_manages", auth=auth)
+                self.poutput("Here are the Business Units you manage:")
+                tabledata = response.json()
+                l1,l2 = len(tabledata), len(tabledata[0])
+                df = pd.DataFrame(tabledata, index=['']*l1, columns=['']*l2)
+                self.poutput(df.head())
+                self.poutput('\n')
+                b_id = input("Which Business Unit's Vulnerabilities would you like to view? (ID NUMBER): ")
+                try:
+                    data = {'id': int(b_id)}
+                    response = requests.get(method + url_sysadmin1 + '/sysadmin1_all_computer_vulns_by_bu', auth=auth, json=data)
+                    tabledata = response.json()
+                    l1,l2 = len(tabledata), len(tabledata[0])
+                    df = pd.DataFrame(tabledata, index=['']*l1, columns=['']*l2)
+                    df.set_axis(['COMPUTER NAME', 'OS','OS_VERSION','CVE', 'SEVERITY'],axis=1,inplace=True)
+                    self.poutput('Here are the vulnerabilities in your business unit:')
+                    self.poutput(df.head())
+                    self.poutput('\n')
+                except ValueError:
+                    print("Please enter a valid integer")
+                except KeyError:
+                    print("You do not have access to that business unit")
+                except IndexError:
+                    print("The business unit you requested is empty.")
+            if role == 'sysadmin2':
+                response = requests.get(method + url_sysadmin2 + "/sysadmin2_all_bus_user_manages", auth=auth)
+                self.poutput("Here are the Business Units you manage:")
+                tabledata = response.json()
+                l1,l2 = len(tabledata), len(tabledata[0])
+                df = pd.DataFrame(tabledata, index=['']*l1, columns=['']*l2)
+                self.poutput(df.head())
+                self.poutput('\n')
+                b_id = input("Which Business Unit's Vulnerabilities would you like to view? (ID NUMBER): ")
+                try:
+                    data = {'id': int(b_id)}
+                    response = requests.get(method + url_sysadmin2 + '/sysadmin2_all_computer_vulns_by_bu', auth=auth, json=data)
+                    tabledata = response.json()
+                    l1,l2 = len(tabledata), len(tabledata[0])
+                    df = pd.DataFrame(tabledata, index=['']*l1, columns=['']*l2)
+                    df.set_axis(['COMPUTER NAME', 'OS','OS_VERSION','CVE', 'SEVERITY'],axis=1,inplace=True)
+                    self.poutput('Here are the vulnerabilities in your business unit:')
+                    self.poutput(df.head())
+                    self.poutput('\n')
+                except ValueError:
+                    print("Please enter a valid integer")
+                except KeyError:
+                    print("You do not have access to that business unit")
+                except IndexError:
+                    print("The business unit you requested is empty.")
+    parser_vuln.set_defaults(func=list_vulns)
 
+    def list_apps(self, args):
+        if(loggedIn):
+            if role == 'sysadmin1':
+                response = requests.get(method + url_sysadmin1 + "/sysadmin1_all_bus_user_manages", auth=auth)
+                self.poutput("Here are the Business Units you manage:")
+                tabledata = response.json()
+                l1,l2 = len(tabledata), len(tabledata[0])
+                df = pd.DataFrame(tabledata, index=['']*l1, columns=['']*l2)
+                self.poutput(df.head())
+                self.poutput('\n')
+                b_id = input("Which Business Unit's Computers would you like to view? (ID NUMBER): ")
+                try:
+                    data = {'id': int(b_id)}
+                    response = requests.get(method + url_sysadmin1 + '/sysadmin1_all_computers_in_one_bu', auth=auth, json=data)
+                    tabledata = response.json()
+                    l1,l2 = len(tabledata), len(tabledata[0])
+                    df = pd.DataFrame(tabledata, index=['']*l1, columns=['']*l2)
+                    self.poutput('Here are the computers in your business unit:')
+                    self.poutput(df.head())
+                    self.poutput('\n')
+                    c_id = input("Which Computer's Apps would you like to view? (ID NUMBER): ")
+                    try:
+                        data = {'id': int(c_id)}
+                        response = requests.get(method + url_sysadmin1 + '/sysadmin1_all_apps_on_computers', auth=auth, json=data)
+                        tabledata = response.json()
+                        l1,l2 = len(tabledata), len(tabledata[0])
+                        df = pd.DataFrame(tabledata, index=['']*l1, columns=['']*l2)
+                        df.set_axis(['COMPUTER NAME', 'APPLICATION', 'APP_VERSION', 'APP ID'],axis=1,inplace=True)
+                        self.poutput('Here are the computers in your business unit:')
+                        self.poutput(df.head())
+                        self.poutput('\n')
+                    except ValueError:
+                        print("Please enter a valid integer")
+                    except KeyError:
+                        print("You do not have access to that computer.")
+                    except IndexError:
+                        print("The computer you requested has no apps.")
+                except ValueError:
+                    print("Please enter a valid integer")
+                except KeyError:
+                    print("You do not have access to that business unit")
+                except IndexError:
+                    print("The business unit you requested is empty.")
+            if role == 'sysadmin2':
+                response = requests.get(method + url_sysadmin2 + "/sysadmin2_all_bus_user_manages", auth=auth)
+                self.poutput("Here are the Business Units you manage:")
+                tabledata = response.json()
+                l1,l2 = len(tabledata), len(tabledata[0])
+                df = pd.DataFrame(tabledata, index=['']*l1, columns=['']*l2)
+                self.poutput(df.head())
+                self.poutput('\n')
+                b_id = input("Which Business Unit's Computers would you like to view? (ID NUMBER): ")
+                try:
+                    data = {'id': int(b_id)}
+                    response = requests.get(method + url_sysadmin2 + '/sysadmin2_all_computers_in_one_bu', auth=auth, json=data)
+                    tabledata = response.json()
+                    l1,l2 = len(tabledata), len(tabledata[0])
+                    df = pd.DataFrame(tabledata, index=['']*l1, columns=['']*l2)
+                    self.poutput('Here are the computers in your business unit:')
+                    self.poutput(df.head())
+                    self.poutput('\n')
+                    c_id = input("Which Computer's Apps would you like to view? (ID NUMBER): ")
+                    try:
+                        data = {'id': int(c_id)}
+                        response = requests.get(method + url_sysadmin2 + '/sysadmin2_all_apps_on_computers', auth=auth, json=data)
+                        tabledata = response.json()
+                        l1,l2 = len(tabledata), len(tabledata[0])
+                        df = pd.DataFrame(tabledata, index=['']*l1, columns=['']*l2)
+                        df.set_axis(['COMPUTER NAME', 'APPLICATION', 'APP_VERSION', 'APP ID'],axis=1,inplace=True)
+                        self.poutput('Here are the computers in your business unit:')
+                        self.poutput(df.head())
+                        self.poutput('\n')
+                    except ValueError:
+                        print("Please enter a valid integer")
+                    except KeyError:
+                        print("You do not have access to that computer.")
+                    except IndexError:
+                        print("The computer you requested has no apps.")
+                except ValueError:
+                    print("Please enter a valid integer")
+                except KeyError:
+                    print("You do not have access to that business unit")
+                except IndexError:
+                    print("The business unit you requested is empty.")
+    parser_apps.set_defaults(func=list_apps)
 
 
 #############################
