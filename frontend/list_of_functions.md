@@ -5,7 +5,7 @@
 ✓ all_bus_user_manages
 ✓ all_computers_in_one_bu
 ✓ all_computer_vulns_by_bu
-- all_apps_on_computers
+✓ all_apps_on_computers
 
 ## Analyst
 
