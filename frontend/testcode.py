@@ -45,6 +45,8 @@ parser_vuln = list_subparsers.add_parser('vulns', help='vulnerability help')
 
 parser_apps = list_subparsers.add_parser('apps', help='application help')
 
+parser_cve = list_subparsers.add_parser('cve', help='cve help')
+
 ######################################
 # Define Class for interactive shell #
 ######################################
@@ -387,6 +389,31 @@ class cvetracker(Cmd):
             self.poutput("You must log in to view this data.")
     parser_apps.set_defaults(func=list_apps)
 
+    def list_cve(self, args):
+        if(loggedIn):
+            if role == 'analyst':
+                try:
+                    cves = input("Enter the CVE you'd like to search for (FORMAT = CVE-####-####) [leave blank for all]: ")
+                    if cves == "":
+                        cves = "%"
+                    data = {'values': cves}
+                    response = requests.get(method + url_analyst + "/analyst_list_all_info_by_cve", auth=auth, json=data)
+                    tabledata = response.json()
+                    l1,l2 = len(tabledata), len(tabledata[0])
+                    df = pd.DataFrame(tabledata, index=['']*l1, columns=['']*l2)
+                    df.set_axis(['CVE', 'SEVERITY', 'COMPUTER NAME', 'OS', 'OS_VERSION','BUSINESS UNIT'],axis=1,inplace=True)
+                    self.poutput('Here are the computers in your business unit:')
+                    self.poutput(df.head())
+                    self.poutput('\n')
+                except IndexError:
+                    self.poutput("Either the CVE does not exist, or that is not a valid CVE.")
+                    self.poutput("Please ensure you are using a proper CVE in the format CVE-{YEAR}-{CVEID}")
+                    self.poutput("If your format is correct, then no computer in your organization has that vulnerability.")
+            else:
+                self.poutput("Your role does not have access to this data.")
+        else:
+            self.poutput("You must log in to view this data.")
+    parser_cve.set_defaults(func=list_cve)
 
 #############################
 # Define AWS Login function #
