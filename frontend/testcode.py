@@ -57,6 +57,10 @@ delete_parser = Cmd2ArgumentParser()
 delete_subparsers = delete_parser.add_subparsers(title='subcommands', help='subcommand help')
 parser_delete_computer = delete_subparsers.add_parser('computer', help='delete a computer')
 
+update_parser = Cmd2ArgumentParser()
+update_subparsers = update_parser.add_subparsers(title='subcommands', help='subcommand help')
+parser_update_computer = update_subparsers.add_parser('computer', help='update a computer\'s information')
+
 ######################################
 # Define Class for interactive shell #
 ######################################
@@ -494,7 +498,6 @@ class cvetracker(Cmd):
                 self.poutput("Your role does not have access to this action.")
         else:
             self.poutput("You must log in to view this data.")
-
     parser_create_computer.set_defaults(func=create_computer)
 
     ######################
@@ -544,9 +547,61 @@ class cvetracker(Cmd):
                 self.poutput("Your role does not have access to this action.")
         else:
             self.poutput("You must log in to complete this action.")
-
-
     parser_delete_computer.set_defaults(func=delete_computer)
+
+    ######################
+    # do_update function #
+    ######################
+
+
+    @cmd2.with_argparser(update_parser)
+    def do_update(self, args):
+        """Test Help Menu"""
+        func = getattr(args, 'func', None)
+        if func is not None:
+            func(self, args)
+        else:
+            if(loggedIn):
+                self.do_help('update')
+            else:
+                self.poutput("Sorry, can't access the database. You are not logged in.")
+
+    def update_computer(self, args):
+        if(loggedIn):
+            if role == 'engineer':
+                strings = input("Enter a computer name, or the first portion of a computer name, if you want to see multiple computers that share a common name (leave blank for all computers): ")
+                if strings == '' or strings == '%':
+                    strings = '%'
+                else:
+                    strings = strings + '%'
+                try:
+                    data = {'values': strings}
+                    response = requests.get(method + url_engineer + '/engineer_access_computers', auth=auth, json=data)
+                    tabledata = response.json()
+                    l1,l2 = len(tabledata), len(tabledata[0])
+                    df = pd.DataFrame(tabledata, index=['']*l1, columns=['']*l2)
+                    df.set_axis(['COMPUTER NAME', 'OS', 'COMPUTER_ID', 'OS_CERSION', 'BUSINESs_UNIT_ID'],axis=1,inplace=True)
+                    self.poutput(df.to_string())
+                    self.poutput('\n')
+                    try:
+                        delid = input("Enter the COMPUTER_ID from the above table of the computer you would like to update: ")
+                        name = input('What is the computer\'s updated name? ')
+                        os = input('What is the computer\'s updated OS? ')
+                        vers = input("What is the computer's updated OS version? ")
+                        unit = input("What is the computer's updated Business Unit ID? ")
+                        data = {"name": name, "operatingsystem": os, "os_version": vers, "unitid": int(unit), 'id': int(delid)}
+                        response = requests.put(method + url_engineer + '/engineer_access_computers', auth=auth, json=data)
+                        print(response.text)
+                        self.poutput("Your computer is now updated")
+                    except:
+                        print("Something unexpected occurred. Please try again.")
+                except IndexError:
+                    self.poutput("There are no computers that match that name, or that start with those characters.")
+            else:
+                self.poutput("Your role does not have access to this action.")
+        else:
+            self.poutput("You must log in to complete this action.")
+    parser_update_computer.set_defaults(func=update_computer)
 
 
 

@@ -16,11 +16,11 @@
 
 ## Engineer
 
-- list_all_info_by_bu
-- access_computers_post
-- access_computers_get
-- access_computers_put
-- access_computers_delete
+- list_all_info_by_bu           Honestly not sure about this one (what it does, how it works, etc)
+✓ access_computers_post
+✓ access_computers_get
+✓ access_computers_put
+✓ access_computers_delete
 - access_bus_post
 ✓ access_bus_get
 - access_bus_put
