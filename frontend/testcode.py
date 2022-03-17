@@ -47,6 +47,16 @@ parser_apps = list_subparsers.add_parser('apps', help='application help')
 
 parser_cve = list_subparsers.add_parser('cve', help='cve help')
 
+
+create_parser = Cmd2ArgumentParser()
+create_subparsers = create_parser.add_subparsers(title='subcommands', help='subcommand help')
+parser_create_computer = create_subparsers.add_parser('computer', help='create a new computer')
+
+
+delete_parser = Cmd2ArgumentParser()
+delete_subparsers = delete_parser.add_subparsers(title='subcommands', help='subcommand help')
+parser_delete_computer = delete_subparsers.add_parser('computer', help='delete a computer')
+
 ######################################
 # Define Class for interactive shell #
 ######################################
@@ -98,6 +108,12 @@ class cvetracker(Cmd):
             print("You aren't logged in.")
 
 
+
+    ####################
+    # do_list function #
+    ####################
+
+
     @cmd2.with_argparser(list_parser)
     def do_list(self, args):
         """Test Help Menu"""
@@ -119,7 +135,7 @@ class cvetracker(Cmd):
                 tabledata = response.json()
                 l1,l2 = len(tabledata), len(tabledata[0])
                 df = pd.DataFrame(tabledata, index=['']*l1, columns=['']*l2)
-                self.poutput(df.head())
+                self.poutput(df.to_string())
                 self.poutput('\n')
                 b_id = input("Which Business Unit would you like to view? (ID NUMBER): ")
                 try:
@@ -130,7 +146,7 @@ class cvetracker(Cmd):
                     df = pd.DataFrame(tabledata, index=['']*l1, columns=['']*l2)
                     df.set_axis(['COMPUTER NAME','COMPUTER ID'],axis=1,inplace=True)
                     self.poutput('Here are the computers you requested:')
-                    self.poutput(df.head())
+                    self.poutput(df.to_string())
                     self.poutput('\n')
                 except ValueError:
                     print("Please enter a valid integer")
@@ -144,19 +160,18 @@ class cvetracker(Cmd):
                 tabledata = response.json()
                 l1,l2 = len(tabledata), len(tabledata[0])
                 df = pd.DataFrame(tabledata, index=['']*l1, columns=['']*l2)
-                self.poutput(df.head())
+                self.poutput(df.to_string())
                 self.poutput('\n')
                 b_id = input("Which Business Unit would you like to view? (ID NUMBER): ")
                 try:
-                    #data = {'id': int(b_id)}
-                    data = {'id': float(b_id)}
+                    data = {'id': int(b_id)}
                     response = requests.get(method + url_sysadmin2 + '/sysadmin2_all_computers_in_one_bu', auth=auth, json=data)
                     tabledata = response.json()
                     l1,l2 = len(tabledata), len(tabledata[0])
                     df = pd.DataFrame(tabledata, index=['']*l1, columns=['']*l2)
                     df.set_axis(['COMPUTER NAME','COMPUTER ID'],axis=1,inplace=True)
                     self.poutput(f'Here are the computers you requested:')
-                    self.poutput(df.head())
+                    self.poutput(df.to_string())
                     self.poutput('\n')
                 except ValueError:
                     print("Please enter a valid integer")
@@ -174,13 +189,30 @@ class cvetracker(Cmd):
                     df = pd.DataFrame(tabledata, index=['']*l1, columns=['']*l2)
                     df.set_axis(['CVE', 'SEVERITY', 'COMPUTER NAME', 'OS', 'OS_VERSION','BUSINESS UNIT'],axis=1,inplace=True)
                     self.poutput('Here are the computers you requested:')
-                    self.poutput(df.head())
+                    self.poutput(df.to_string())
                     self.poutput('\n')
                 except ValueError:
                     print("Please enter a valid integer")
                 except IndexError:
                     print(f"There are no CVEs with severities above {sev}")
-
+            elif role == 'engineer':
+                strings = input("Please enter a computer name you'd like to see, or the first portion of the computer name, if you want to see multiple computers that share a common name(leave blank for all computers): ")
+                if strings == '' or strings == '%':
+                    strings = '%'
+                else:
+                    strings = strings + '%'
+                try:
+                    data = {'values': strings}
+                    response = requests.get(method + url_engineer + '/engineer_access_computers', auth=auth, json=data)
+                    tabledata = response.json()
+                    l1,l2 = len(tabledata), len(tabledata[0])
+                    df = pd.DataFrame(tabledata, index=['']*l1, columns=['']*l2)
+                    df.set_axis(['COMPUTER NAME', 'OS', 'COMPUTER_ID', 'OS_CERSION', 'BUSINESs_UNIT_ID'],axis=1,inplace=True)
+                    self.poutput('Here are the computers you requested:')
+                    self.poutput(df.to_string())
+                    self.poutput('\n')
+                except IndexError:
+                    self.poutput("There are no computers that match that name, or that start with those characters.")
         else:
             self.poutput("You must log in to view this data.")
     parser_computer.set_defaults(func=list_computer)
@@ -194,7 +226,7 @@ class cvetracker(Cmd):
                 l1,l2 = len(tabledata), len(tabledata[0])
                 df = pd.DataFrame(tabledata, index=['']*l1, columns=['']*l2)
                 df.set_axis(['BUSINESS UNIT', 'UNIT ID'],axis=1,inplace=True)
-                self.poutput(df.head())
+                self.poutput(df.to_string())
                 self.poutput('\n')
             elif role == 'sysadmin2':
                 response = requests.get(method + url_sysadmin2 + "/sysadmin2_all_bus_user_manages", auth=auth)
@@ -203,7 +235,7 @@ class cvetracker(Cmd):
                 l1,l2 = len(tabledata), len(tabledata[0])
                 df = pd.DataFrame(tabledata, index=['']*l1, columns=['']*l2)
                 df.set_axis(['BUSINESS UNIT', 'UNIT ID'],axis=1,inplace=True)
-                self.poutput(df.head())
+                self.poutput(df.to_string())
                 self.poutput('\n')
             elif role == 'analyst':
         # TODO: Enter the Vuln Count table here to see a list of all BUs with vulns
@@ -218,7 +250,7 @@ class cvetracker(Cmd):
                     df = pd.DataFrame(tabledata, index=['']*l1, columns=['']*l2)
                     df.set_axis(['CVE', 'SEVERITY', 'COMPUTER NAME', 'OS', 'OS_VERSION', 'BUSINESS UNIT'],axis=1,inplace=True)
                     self.poutput("Here are the vulnerable computers in the business unit")
-                    self.poutput(df.head())
+                    self.poutput(df.to_string())
                     self.poutput('\n')
                 except IndexError:
                     print("Please enter a valid Business Unit name.")
@@ -230,7 +262,7 @@ class cvetracker(Cmd):
                 l1,l2 = len(tabledata), len(tabledata[0])
                 df = pd.DataFrame(tabledata, index=['']*l1, columns=['']*l2)
                 df.set_axis(['BUSINESS UNIT', 'BUSINESS UNIT ID', 'ADMIN ID', 'BELONGS TO'],axis=1,inplace=True)
-                self.poutput(df.head())
+                self.poutput(df.to_string())
                 self.poutput('\n')
         else:
             self.poutput("You must log in to view this data.")
@@ -244,7 +276,7 @@ class cvetracker(Cmd):
                 tabledata = response.json()
                 l1,l2 = len(tabledata), len(tabledata[0])
                 df = pd.DataFrame(tabledata, index=['']*l1, columns=['']*l2)
-                self.poutput(df.head())
+                self.poutput(df.to_string())
                 self.poutput('\n')
                 b_id = input("Which Business Unit's Vulnerabilities would you like to view? (ID NUMBER): ")
                 try:
@@ -255,7 +287,7 @@ class cvetracker(Cmd):
                     df = pd.DataFrame(tabledata, index=['']*l1, columns=['']*l2)
                     df.set_axis(['COMPUTER NAME', 'OS','OS_VERSION','CVE', 'SEVERITY'],axis=1,inplace=True)
                     self.poutput('Here are the vulnerabilities in your business unit:')
-                    self.poutput(df.head())
+                    self.poutput(df.to_string())
                     self.poutput('\n')
                 except ValueError:
                     print("Please enter a valid integer")
@@ -269,7 +301,7 @@ class cvetracker(Cmd):
                 tabledata = response.json()
                 l1,l2 = len(tabledata), len(tabledata[0])
                 df = pd.DataFrame(tabledata, index=['']*l1, columns=['']*l2)
-                self.poutput(df.head())
+                self.poutput(df.to_string())
                 self.poutput('\n')
                 b_id = input("Which Business Unit's Vulnerabilities would you like to view? (ID NUMBER): ")
                 try:
@@ -280,7 +312,7 @@ class cvetracker(Cmd):
                     df = pd.DataFrame(tabledata, index=['']*l1, columns=['']*l2)
                     df.set_axis(['COMPUTER NAME', 'OS','OS_VERSION','CVE', 'SEVERITY'],axis=1,inplace=True)
                     self.poutput('Here are the vulnerabilities in your business unit:')
-                    self.poutput(df.head())
+                    self.poutput(df.to_string())
                     self.poutput('\n')
                 except ValueError:
                     print("Please enter a valid integer")
@@ -295,7 +327,7 @@ class cvetracker(Cmd):
                 df = pd.DataFrame(tabledata, index=['']*l1, columns=['']*l2)
                 df.set_axis(['BUSINESS UNIT', 'SEVERITY (>5.0)'],axis=1,inplace=True)
                 self.poutput("Here are the serious vulnerabilities in each business unit (severity > 5.0):")
-                self.poutput(df.head())
+                self.poutput(df.to_string())
                 self.poutput('\n')
         else:
             self.poutput("You must log in to view this data.")
@@ -309,7 +341,7 @@ class cvetracker(Cmd):
                 tabledata = response.json()
                 l1,l2 = len(tabledata), len(tabledata[0])
                 df = pd.DataFrame(tabledata, index=['']*l1, columns=['']*l2)
-                self.poutput(df.head())
+                self.poutput(df.to_string())
                 self.poutput('\n')
                 b_id = input("Which Business Unit's Computers would you like to view? (ID NUMBER): ")
                 try:
@@ -319,7 +351,7 @@ class cvetracker(Cmd):
                     l1,l2 = len(tabledata), len(tabledata[0])
                     df = pd.DataFrame(tabledata, index=['']*l1, columns=['']*l2)
                     self.poutput('Here are the computers in your business unit:')
-                    self.poutput(df.head())
+                    self.poutput(df.to_string())
                     self.poutput('\n')
                     c_id = input("Which Computer's Apps would you like to view? (ID NUMBER): ")
                     try:
@@ -330,7 +362,7 @@ class cvetracker(Cmd):
                         df = pd.DataFrame(tabledata, index=['']*l1, columns=['']*l2)
                         df.set_axis(['COMPUTER NAME', 'APPLICATION', 'APP_VERSION', 'APP ID'],axis=1,inplace=True)
                         self.poutput('Here are the computers in your business unit:')
-                        self.poutput(df.head())
+                        self.poutput(df.to_string())
                         self.poutput('\n')
                     except ValueError:
                         print("Please enter a valid integer")
@@ -350,7 +382,7 @@ class cvetracker(Cmd):
                 tabledata = response.json()
                 l1,l2 = len(tabledata), len(tabledata[0])
                 df = pd.DataFrame(tabledata, index=['']*l1, columns=['']*l2)
-                self.poutput(df.head())
+                self.poutput(df.to_string())
                 self.poutput('\n')
                 b_id = input("Which Business Unit's Computers would you like to view? (ID NUMBER): ")
                 try:
@@ -360,7 +392,7 @@ class cvetracker(Cmd):
                     l1,l2 = len(tabledata), len(tabledata[0])
                     df = pd.DataFrame(tabledata, index=['']*l1, columns=['']*l2)
                     self.poutput('Here are the computers in your business unit:')
-                    self.poutput(df.head())
+                    self.poutput(df.to_string())
                     self.poutput('\n')
                     c_id = input("Which Computer's Apps would you like to view? (ID NUMBER): ")
                     try:
@@ -371,7 +403,7 @@ class cvetracker(Cmd):
                         df = pd.DataFrame(tabledata, index=['']*l1, columns=['']*l2)
                         df.set_axis(['COMPUTER NAME', 'APPLICATION', 'APP_VERSION', 'APP ID'],axis=1,inplace=True)
                         self.poutput('Here are the computers in your business unit:')
-                        self.poutput(df.head())
+                        self.poutput(df.to_string())
                         self.poutput('\n')
                     except ValueError:
                         print("Please enter a valid integer")
@@ -403,7 +435,7 @@ class cvetracker(Cmd):
                     df = pd.DataFrame(tabledata, index=['']*l1, columns=['']*l2)
                     df.set_axis(['CVE', 'SEVERITY', 'COMPUTER NAME', 'OS', 'OS_VERSION','BUSINESS UNIT'],axis=1,inplace=True)
                     self.poutput('Here are the computers in your business unit:')
-                    self.poutput(df.head())
+                    self.poutput(df.to_string())
                     self.poutput('\n')
                 except IndexError:
                     self.poutput("Either the CVE does not exist, or that is not a valid CVE.")
@@ -414,6 +446,109 @@ class cvetracker(Cmd):
         else:
             self.poutput("You must log in to view this data.")
     parser_cve.set_defaults(func=list_cve)
+
+
+    ######################
+    # do_create function #
+    ######################
+
+    @cmd2.with_argparser(create_parser)
+    def do_create(self, args):
+        """Test Help Menu"""
+        func = getattr(args, 'func', None)
+        if func is not None:
+            func(self, args)
+        else:
+            if(loggedIn):
+                self.do_help('create')
+            else:
+                self.poutput("Sorry, can't access the database. You are not logged in.")
+
+    def create_computer(self, args):
+        if(loggedIn):
+            if role == 'engineer':
+                try:
+                    name = input("Enter the computer's name: ")
+                    os = input("Enter the computer's operating system: ")
+                    vers = input("Enter the operating system version: ")
+
+                    data = {'values': '%'}
+                    response = requests.get(method + url_engineer + "/engineer_access_bus", auth=auth, json=data)
+                    self.poutput("Here are the Business Units in your organization::")
+                    tabledata = response.json()
+                    l1,l2 = len(tabledata), len(tabledata[0])
+                    df = pd.DataFrame(tabledata, index=['']*l1, columns=['']*l2)
+                    df.set_axis(['BUSINESS UNIT', 'BUSINESS UNIT ID', 'ADMIN ID', 'BELONGS TO'],axis=1,inplace=True)
+                    self.poutput(df.to_string())
+                    self.poutput('\n')
+
+                    unitid = input("Please enter the Unit ID from the above table for the Business Unit in which the new computer resides: ")
+
+                    data = {'name': name, 'operatingsystem': os, 'os_version': vers, 'unitid': int(unitid)}
+                    response = requests.post(method + url_engineer + '/engineer_access_computers', auth=auth, json=data)
+                    print(response.text)
+                    self.poutput("Your computer is now added")
+                except:
+                    print("test")
+            else:
+                self.poutput("Your role does not have access to this action.")
+        else:
+            self.poutput("You must log in to view this data.")
+
+    parser_create_computer.set_defaults(func=create_computer)
+
+    ######################
+    # do_delete function #
+    ######################
+
+    @cmd2.with_argparser(delete_parser)
+    def do_delete(self, args):
+        """Test Help Menu"""
+        func = getattr(args, 'func', None)
+        if func is not None:
+            func(self, args)
+        else:
+            if(loggedIn):
+                self.do_help('delete')
+            else:
+                self.poutput("Sorry, can't access the database. You are not logged in.")
+
+    def delete_computer(self, args):
+        if(loggedIn):
+            if role == 'engineer':
+                strings = input("Enter a computer name, or the first portion of a computer name, if you want to see multiple computers that share a common name (leave blank for all computers): ")
+                if strings == '' or strings == '%':
+                    strings = '%'
+                else:
+                    strings = strings + '%'
+                try:
+                    data = {'values': strings}
+                    response = requests.get(method + url_engineer + '/engineer_access_computers', auth=auth, json=data)
+                    tabledata = response.json()
+                    l1,l2 = len(tabledata), len(tabledata[0])
+                    df = pd.DataFrame(tabledata, index=['']*l1, columns=['']*l2)
+                    df.set_axis(['COMPUTER NAME', 'OS', 'COMPUTER_ID', 'OS_CERSION', 'BUSINESs_UNIT_ID'],axis=1,inplace=True)
+                    self.poutput(df.to_string())
+                    self.poutput('\n')
+                    try:
+                        delid = input("Enter the COMPUTER_ID from the above table of the computer you would like to delete: ")
+                        data = {'id': int(delid)}
+                        response = requests.delete(method + url_engineer + '/engineer_access_computers', auth=auth, json=data)
+                        print(response.text)
+                        self.poutput("Your computer is now deleted")
+                    except:
+                        print("That ID doesn't exist. Please try a different ID number.")
+                except IndexError:
+                    self.poutput("There are no computers that match that name, or that start with those characters.")
+            else:
+                self.poutput("Your role does not have access to this action.")
+        else:
+            self.poutput("You must log in to complete this action.")
+
+
+    parser_delete_computer.set_defaults(func=delete_computer)
+
+
 
 #############################
 # Define AWS Login function #

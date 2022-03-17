@@ -11,7 +11,7 @@
 
 ✓ list_all_info_by_bu
 ✓ list_all_info_by_severity
-- list_all_info_by_cve
+✓ list_all_info_by_cve
 ✓ vuln_count_per_bu
 
 ## Engineer
