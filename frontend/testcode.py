@@ -40,22 +40,22 @@ parser_computer.add_argument('-s','--severity', type=float, help="Vulnerability 
 
 parser_bu = list_subparsers.add_parser('business_units', help='business_unit help')
 parser_bu.add_argument('-b', type=str, default='%', help='Business Unit name')
-
 parser_vuln = list_subparsers.add_parser('vulns', help='vulnerability help')
-
 parser_apps = list_subparsers.add_parser('apps', help='application help')
-
 parser_cve = list_subparsers.add_parser('cve', help='cve help')
+parser_users = list_subparsers.add_parser('users', help='users help')
 
 
 create_parser = Cmd2ArgumentParser()
 create_subparsers = create_parser.add_subparsers(title='subcommands', help='subcommand help')
 parser_create_computer = create_subparsers.add_parser('computer', help='create a new computer')
+parser_create_bu = create_subparsers.add_parser('business_unit', help='create a new business unit')
 
 
 delete_parser = Cmd2ArgumentParser()
 delete_subparsers = delete_parser.add_subparsers(title='subcommands', help='subcommand help')
 parser_delete_computer = delete_subparsers.add_parser('computer', help='delete a computer')
+parser_delete_bu = delete_subparsers.add_parser('business_unit', help='delete a business unit')
 
 update_parser = Cmd2ArgumentParser()
 update_subparsers = update_parser.add_subparsers(title='subcommands', help='subcommand help')
@@ -243,10 +243,20 @@ class cvetracker(Cmd):
                 self.poutput('\n')
             elif role == 'analyst':
         # TODO: Enter the Vuln Count table here to see a list of all BUs with vulns
+                response = requests.get(method + url_analyst + "/analyst_vuln_count_per_bu", auth=auth)
+                tabledata = response.json()
+                l1,l2 = len(tabledata), len(tabledata[0])
+                df = pd.DataFrame(tabledata, index=['']*l1, columns=['']*l2)
+                df.set_axis(['BUSINESS UNIT', 'SEVERITY (>5.0)'],axis=1,inplace=True)
+                self.poutput("Here are the serious vulnerabilities in each business unit (severity > 5.0):")
+                self.poutput(df.to_string())
+                self.poutput('\n')
                 try:
                     bus = input("Enter the Business Unit you'd like to see computers in: (leave blank for all): ")
-                    if bus == "":
-                        bus = "%"
+                    if bus == '' or bus == '%':
+                        bus = '%'
+                    else:
+                        bus = bus + '%'
                     data = {'values': bus}
                     response = requests.get(method + url_analyst + "/analyst_list_all_info_by_bu", auth=auth, json=data)
                     tabledata = response.json()
@@ -257,17 +267,23 @@ class cvetracker(Cmd):
                     self.poutput(df.to_string())
                     self.poutput('\n')
                 except IndexError:
-                    print("Please enter a valid Business Unit name.")
+                    print("Either the business unit name is invalid, or the business unit is empty. Please check your entry and try again.")
             elif role == 'engineer':
-                data = {'values': [str(args.b)]}
-                response = requests.get(method + url_engineer + "/engineer_access_bus", auth=auth, json=data)
-                self.poutput("Here are the Business Units you asked for:")
-                tabledata = response.json()
-                l1,l2 = len(tabledata), len(tabledata[0])
-                df = pd.DataFrame(tabledata, index=['']*l1, columns=['']*l2)
-                df.set_axis(['BUSINESS UNIT', 'BUSINESS UNIT ID', 'ADMIN ID', 'BELONGS TO'],axis=1,inplace=True)
-                self.poutput(df.to_string())
-                self.poutput('\n')
+                try:
+                    bus = input("Enter the Business Unit you'd like to see [leave blank for all]: ")
+                    if bus == '':
+                        bus = '%'
+                    data = {'values': bus}
+                    response = requests.get(method + url_engineer + "/engineer_access_bus", auth=auth, json=data)
+                    self.poutput("Here are the Business Units you asked for:")
+                    tabledata = response.json()
+                    l1,l2 = len(tabledata), len(tabledata[0])
+                    df = pd.DataFrame(tabledata, index=['']*l1, columns=['']*l2)
+                    df.set_axis(['BUSINESS UNIT', 'BUSINESS UNIT ID', 'ADMIN ID', 'BELONGS TO'],axis=1,inplace=True)
+                    self.poutput(df.to_string())
+                    self.poutput('\n')
+                except IndexError:
+                    print("Please enter a valid Business Unit name.")
         else:
             self.poutput("You must log in to view this data.")
     parser_bu.set_defaults(func=list_bus)
@@ -430,8 +446,10 @@ class cvetracker(Cmd):
             if role == 'analyst':
                 try:
                     cves = input("Enter the CVE you'd like to search for (FORMAT = CVE-####-####) [leave blank for all]: ")
-                    if cves == "":
-                        cves = "%"
+                    if cves == '' or cves == '%':
+                        cves = '%'
+                    else:
+                        cves = cves + '%'
                     data = {'values': cves}
                     response = requests.get(method + url_analyst + "/analyst_list_all_info_by_cve", auth=auth, json=data)
                     tabledata = response.json()
@@ -443,13 +461,37 @@ class cvetracker(Cmd):
                     self.poutput('\n')
                 except IndexError:
                     self.poutput("Either the CVE does not exist, or that is not a valid CVE.")
-                    self.poutput("Please ensure you are using a proper CVE in the format CVE-{YEAR}-{CVEID}")
+                    self.poutput("Please ensure you are using a proper CVE in the format CVE-{YEAR}-{CVEID} or CVE-{YEAR}")
                     self.poutput("If your format is correct, then no computer in your organization has that vulnerability.")
             else:
                 self.poutput("Your role does not have access to this data.")
         else:
             self.poutput("You must log in to view this data.")
     parser_cve.set_defaults(func=list_cve)
+
+    def list_users(self, args):
+        if(loggedIn):
+            if role == 'engineer':
+                try:
+                    user = input('Enter the username whose info you\'d like to see [leave blank for all]: ')
+                    if user == '':
+                        user = '%'
+                    data = {'values': user}
+                    response = requests.get(method + url_engineer + '/engineer_access_users', auth=auth, json=data)
+                    tabledata = response.json()
+                    l1,l2 = len(tabledata), len(tabledata[0])
+                    df = pd.DataFrame(tabledata, index=['']*l1, columns=['']*l2)
+                    df.set_axis(['Username', 'Role', 'First_Name', 'Last_Name', 'User_ID'], axis=1,inplace=True)
+                    self.poutput('Here are the users in your organization: ')
+                    self.poutput(df.to_string())
+                    self.poutput('\n')
+                except IndexError:
+                    self.poutput('That username does not exist. Please enter a valid username.')
+            else:
+                self.poutput("Your role does not have access to this data.")
+        else:
+            self.poutput("You must log in to view this data.")
+    parser_users.set_defaults(func=list_users)
 
 
     ######################
@@ -500,6 +542,44 @@ class cvetracker(Cmd):
             self.poutput("You must log in to view this data.")
     parser_create_computer.set_defaults(func=create_computer)
 
+    def create_business(self, args):
+        if(loggedIn):
+            if role == 'engineer':
+                try:
+                    data = {'values': '%'}
+                    name = input('Enter the name for the new business unit: ')
+                    response = requests.get(method + url_engineer + '/engineer_access_users', auth=auth, json=data)
+                    tabledata = response.json()
+                    userdatas = []
+                    for i in tabledata:
+                        userdatas.append(i[4])
+                    print(userdatas)
+                    l1,l2 = len(tabledata), len(tabledata[0])
+                    df = pd.DataFrame(tabledata, index=['']*l1, columns=['']*l2)
+                    df.set_axis(['Username', 'Role', 'First_Name', 'Last_Name', 'User_ID'], axis=1,inplace=True)
+                    self.poutput('Here are the users in your organization: ')
+                    self.poutput(df.to_string())
+                    self.poutput('\n')
+                    try:
+                        user = input("Enter the User_ID for the admin to the new business unit: ")
+                        if(int(user) not in userdatas):
+                            print('That user doesn\'t exist. Please enter an existing user.')
+                        else:
+                            data = {'name': name, 'administrator': int(user)}
+                            response = requests.post(method + url_engineer + '/engineer_access_bus', auth=auth, json=data)
+                            self.poutput(response.text)
+                            self.poutput('Your business unit is now added')
+                    except ValueError:
+                        self.poutput("Please enter a valid integer")
+                except:
+                    print('test2')
+            else:
+                self.poutput('Your role does not have access to this action')
+        else:
+            self.poutput("You must log in to view this data.")
+    parser_create_bu.set_defaults(func=create_business)
+            
+
     ######################
     # do_delete function #
     ######################
@@ -548,6 +628,37 @@ class cvetracker(Cmd):
         else:
             self.poutput("You must log in to complete this action.")
     parser_delete_computer.set_defaults(func=delete_computer)
+
+    def delete_bu(self, args):
+        if(loggedIn):
+            if role == 'engineer':
+                try:
+                    self.poutput("Here are the Business Units in your organization: ")
+                    bus = '%'
+                    data = {'values': bus}
+                    response = requests.get(method + url_engineer + "/engineer_access_bus", auth=auth, json=data)
+                    tabledata = response.json()
+                    l1,l2 = len(tabledata), len(tabledata[0])
+                    df = pd.DataFrame(tabledata, index=['']*l1, columns=['']*l2)
+                    df.set_axis(['BUSINESS UNIT', 'BUSINESS UNIT ID', 'ADMIN ID', 'BELONGS TO'],axis=1,inplace=True)
+                    self.poutput(df.to_string())
+                    self.poutput('\n')
+                    try:
+                        bus = input('Enter the Business Unit ID from the above table to delete: ')
+                        data = {'id': int(bus)}
+                        response = requests.delete(method + url_engineer + '/engineer_access_bus', auth=auth, json=data)
+                        print(response.text)
+                        self.poutput("Your business unit is now deleted")
+                    except:
+                        print("That ID doesn't exist. Please try a different ID number.")
+                except IndexError:
+                    print("Please enter a valid Business Unit name.")
+            else:
+                self.poutput("Your role does not have access to this action.")
+        else:
+            self.poutput("You must log in to complete this action.")
+    parser_delete_bu.set_defaults(func=delete_bu)
+        
 
     ######################
     # do_update function #

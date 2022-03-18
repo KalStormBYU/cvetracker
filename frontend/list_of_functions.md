@@ -21,12 +21,12 @@
 ✓ access_computers_get
 ✓ access_computers_put
 ✓ access_computers_delete
-- access_bus_post
+✓ access_bus_post
 ✓ access_bus_get
 - access_bus_put
 - access_bus_delete
 - access_users_post
-- access_users_get
+✓ access_users_get
 - access_users_put
 - access_users_delete
 - access_cves_post
