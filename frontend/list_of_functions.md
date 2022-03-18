@@ -16,7 +16,7 @@
 
 ## Engineer
 
-- list_all_info_by_bu           Honestly not sure about this one (what it does, how it works, etc)
+- list_all_info_by_bu           Not going to add this endpoint.
 ✓ access_computers_post
 ✓ access_computers_get
 ✓ access_computers_put
