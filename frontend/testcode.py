@@ -50,16 +50,23 @@ create_parser = Cmd2ArgumentParser()
 create_subparsers = create_parser.add_subparsers(title='subcommands', help='subcommand help')
 parser_create_computer = create_subparsers.add_parser('computer', help='create a new computer')
 parser_create_bu = create_subparsers.add_parser('business_unit', help='create a new business unit')
+parser_create_user = create_subparsers.add_parser('user', help='create a new user')
+parser_create_cve = create_subparsers.add_parser('cve', help='create a new CVE')
 
 
 delete_parser = Cmd2ArgumentParser()
 delete_subparsers = delete_parser.add_subparsers(title='subcommands', help='subcommand help')
 parser_delete_computer = delete_subparsers.add_parser('computer', help='delete a computer')
 parser_delete_bu = delete_subparsers.add_parser('business_unit', help='delete a business unit')
+parser_delete_user = delete_subparsers.add_parser('user', help='delete a user')
+parser_delete_cve = delete_subparsers.add_parser('cve', help='delete a cve')
 
 update_parser = Cmd2ArgumentParser()
 update_subparsers = update_parser.add_subparsers(title='subcommands', help='subcommand help')
 parser_update_computer = update_subparsers.add_parser('computer', help='update a computer\'s information')
+parser_update_bu = update_subparsers.add_parser('business_unit', help='update a business unit\'s information')
+parser_update_user = update_subparsers.add_parser('user', help='update a user\'s information')
+parser_update_cve = update_subparsers.add_parser('cve', help='update a cve\'s information')
 
 ######################################
 # Define Class for interactive shell #
@@ -148,7 +155,7 @@ class cvetracker(Cmd):
                     tabledata = response.json()
                     l1,l2 = len(tabledata), len(tabledata[0])
                     df = pd.DataFrame(tabledata, index=['']*l1, columns=['']*l2)
-                    df.set_axis(['COMPUTER NAME','COMPUTER ID'],axis=1,inplace=True)
+                    df.set_axis(['COMPUTER_NAME','COMPUTER_ID'],axis=1,inplace=True)
                     self.poutput('Here are the computers you requested:')
                     self.poutput(df.to_string())
                     self.poutput('\n')
@@ -173,7 +180,7 @@ class cvetracker(Cmd):
                     tabledata = response.json()
                     l1,l2 = len(tabledata), len(tabledata[0])
                     df = pd.DataFrame(tabledata, index=['']*l1, columns=['']*l2)
-                    df.set_axis(['COMPUTER NAME','COMPUTER ID'],axis=1,inplace=True)
+                    df.set_axis(['COMPUTER_NAME','COMPUTER_ID'],axis=1,inplace=True)
                     self.poutput(f'Here are the computers you requested:')
                     self.poutput(df.to_string())
                     self.poutput('\n')
@@ -191,7 +198,7 @@ class cvetracker(Cmd):
                     tabledata = response.json()
                     l1,l2 = len(tabledata), len(tabledata[0])
                     df = pd.DataFrame(tabledata, index=['']*l1, columns=['']*l2)
-                    df.set_axis(['CVE', 'SEVERITY', 'COMPUTER NAME', 'OS', 'OS_VERSION','BUSINESS UNIT'],axis=1,inplace=True)
+                    df.set_axis(['CVE', 'SEVERITY', 'COMPUTER_NAME', 'OS', 'OS_VERSION','BUSINESS_UNIT'],axis=1,inplace=True)
                     self.poutput('Here are the computers you requested:')
                     self.poutput(df.to_string())
                     self.poutput('\n')
@@ -211,7 +218,7 @@ class cvetracker(Cmd):
                     tabledata = response.json()
                     l1,l2 = len(tabledata), len(tabledata[0])
                     df = pd.DataFrame(tabledata, index=['']*l1, columns=['']*l2)
-                    df.set_axis(['COMPUTER NAME', 'OS', 'COMPUTER_ID', 'OS_CERSION', 'BUSINESs_UNIT_ID'],axis=1,inplace=True)
+                    df.set_axis(['COMPUTER_NAME', 'OS', 'COMPUTER_ID', 'OS_VERSION', 'BUSINESS_UNIT_ID'],axis=1,inplace=True)
                     self.poutput('Here are the computers you requested:')
                     self.poutput(df.to_string())
                     self.poutput('\n')
@@ -229,7 +236,7 @@ class cvetracker(Cmd):
                 tabledata = response.json()
                 l1,l2 = len(tabledata), len(tabledata[0])
                 df = pd.DataFrame(tabledata, index=['']*l1, columns=['']*l2)
-                df.set_axis(['BUSINESS UNIT', 'UNIT ID'],axis=1,inplace=True)
+                df.set_axis(['BUSINESS_UNIT', 'UNIT_ID'],axis=1,inplace=True)
                 self.poutput(df.to_string())
                 self.poutput('\n')
             elif role == 'sysadmin2':
@@ -238,7 +245,7 @@ class cvetracker(Cmd):
                 tabledata = response.json()
                 l1,l2 = len(tabledata), len(tabledata[0])
                 df = pd.DataFrame(tabledata, index=['']*l1, columns=['']*l2)
-                df.set_axis(['BUSINESS UNIT', 'UNIT ID'],axis=1,inplace=True)
+                df.set_axis(['BUSINESS_UNIT', 'UNIT_ID'],axis=1,inplace=True)
                 self.poutput(df.to_string())
                 self.poutput('\n')
             elif role == 'analyst':
@@ -247,7 +254,7 @@ class cvetracker(Cmd):
                 tabledata = response.json()
                 l1,l2 = len(tabledata), len(tabledata[0])
                 df = pd.DataFrame(tabledata, index=['']*l1, columns=['']*l2)
-                df.set_axis(['BUSINESS UNIT', 'SEVERITY (>5.0)'],axis=1,inplace=True)
+                df.set_axis(['BUSINESS_UNIT', 'SEVERITY_(>5.0)'],axis=1,inplace=True)
                 self.poutput("Here are the serious vulnerabilities in each business unit (severity > 5.0):")
                 self.poutput(df.to_string())
                 self.poutput('\n')
@@ -262,7 +269,7 @@ class cvetracker(Cmd):
                     tabledata = response.json()
                     l1,l2 = len(tabledata), len(tabledata[0])
                     df = pd.DataFrame(tabledata, index=['']*l1, columns=['']*l2)
-                    df.set_axis(['CVE', 'SEVERITY', 'COMPUTER NAME', 'OS', 'OS_VERSION', 'BUSINESS UNIT'],axis=1,inplace=True)
+                    df.set_axis(['CVE', 'SEVERITY', 'COMPUTER_NAME', 'OS', 'OS_VERSION', 'BUSINESS UNIT'],axis=1,inplace=True)
                     self.poutput("Here are the vulnerable computers in the business unit")
                     self.poutput(df.to_string())
                     self.poutput('\n')
@@ -275,11 +282,11 @@ class cvetracker(Cmd):
                         bus = '%'
                     data = {'values': bus}
                     response = requests.get(method + url_engineer + "/engineer_access_bus", auth=auth, json=data)
-                    self.poutput("Here are the Business Units you asked for:")
                     tabledata = response.json()
                     l1,l2 = len(tabledata), len(tabledata[0])
                     df = pd.DataFrame(tabledata, index=['']*l1, columns=['']*l2)
-                    df.set_axis(['BUSINESS UNIT', 'BUSINESS UNIT ID', 'ADMIN ID', 'BELONGS TO'],axis=1,inplace=True)
+                    df.set_axis(['BUSINESS_UNIT', 'BUSINESS_UNIT_ID', 'ADMIN_ID', 'BELONGS_TO'],axis=1,inplace=True)
+                    self.poutput("Here are the Business Units you asked for:")
                     self.poutput(df.to_string())
                     self.poutput('\n')
                 except IndexError:
@@ -305,7 +312,7 @@ class cvetracker(Cmd):
                     tabledata = response.json()
                     l1,l2 = len(tabledata), len(tabledata[0])
                     df = pd.DataFrame(tabledata, index=['']*l1, columns=['']*l2)
-                    df.set_axis(['COMPUTER NAME', 'OS','OS_VERSION','CVE', 'SEVERITY'],axis=1,inplace=True)
+                    df.set_axis(['COMPUTER_NAME', 'OS','OS_VERSION','CVE', 'SEVERITY'],axis=1,inplace=True)
                     self.poutput('Here are the vulnerabilities in your business unit:')
                     self.poutput(df.to_string())
                     self.poutput('\n')
@@ -330,7 +337,7 @@ class cvetracker(Cmd):
                     tabledata = response.json()
                     l1,l2 = len(tabledata), len(tabledata[0])
                     df = pd.DataFrame(tabledata, index=['']*l1, columns=['']*l2)
-                    df.set_axis(['COMPUTER NAME', 'OS','OS_VERSION','CVE', 'SEVERITY'],axis=1,inplace=True)
+                    df.set_axis(['COMPUTER_NAME', 'OS','OS_VERSION','CVE', 'SEVERITY'],axis=1,inplace=True)
                     self.poutput('Here are the vulnerabilities in your business unit:')
                     self.poutput(df.to_string())
                     self.poutput('\n')
@@ -345,7 +352,7 @@ class cvetracker(Cmd):
                 tabledata = response.json()
                 l1,l2 = len(tabledata), len(tabledata[0])
                 df = pd.DataFrame(tabledata, index=['']*l1, columns=['']*l2)
-                df.set_axis(['BUSINESS UNIT', 'SEVERITY (>5.0)'],axis=1,inplace=True)
+                df.set_axis(['BUSINESS_UNIT', 'SEVERITY_(>5.0)'],axis=1,inplace=True)
                 self.poutput("Here are the serious vulnerabilities in each business unit (severity > 5.0):")
                 self.poutput(df.to_string())
                 self.poutput('\n')
@@ -380,7 +387,7 @@ class cvetracker(Cmd):
                         tabledata = response.json()
                         l1,l2 = len(tabledata), len(tabledata[0])
                         df = pd.DataFrame(tabledata, index=['']*l1, columns=['']*l2)
-                        df.set_axis(['COMPUTER NAME', 'APPLICATION', 'APP_VERSION', 'APP ID'],axis=1,inplace=True)
+                        df.set_axis(['COMPUTER_NAME', 'APPLICATION', 'APP_VERSION', 'APP_ID'],axis=1,inplace=True)
                         self.poutput('Here are the computers in your business unit:')
                         self.poutput(df.to_string())
                         self.poutput('\n')
@@ -421,7 +428,7 @@ class cvetracker(Cmd):
                         tabledata = response.json()
                         l1,l2 = len(tabledata), len(tabledata[0])
                         df = pd.DataFrame(tabledata, index=['']*l1, columns=['']*l2)
-                        df.set_axis(['COMPUTER NAME', 'APPLICATION', 'APP_VERSION', 'APP ID'],axis=1,inplace=True)
+                        df.set_axis(['COMPUTER_NAME', 'APPLICATION', 'APP_VERSION', 'APP_ID'],axis=1,inplace=True)
                         self.poutput('Here are the computers in your business unit:')
                         self.poutput(df.to_string())
                         self.poutput('\n')
@@ -455,7 +462,7 @@ class cvetracker(Cmd):
                     tabledata = response.json()
                     l1,l2 = len(tabledata), len(tabledata[0])
                     df = pd.DataFrame(tabledata, index=['']*l1, columns=['']*l2)
-                    df.set_axis(['CVE', 'SEVERITY', 'COMPUTER NAME', 'OS', 'OS_VERSION','BUSINESS UNIT'],axis=1,inplace=True)
+                    df.set_axis(['CVE', 'SEVERITY', 'COMPUTER_NAME', 'OS', 'OS_VERSION','BUSINESS_UNIT'],axis=1,inplace=True)
                     self.poutput('Here are the computers in your business unit:')
                     self.poutput(df.to_string())
                     self.poutput('\n')
@@ -463,6 +470,27 @@ class cvetracker(Cmd):
                     self.poutput("Either the CVE does not exist, or that is not a valid CVE.")
                     self.poutput("Please ensure you are using a proper CVE in the format CVE-{YEAR}-{CVEID} or CVE-{YEAR}")
                     self.poutput("If your format is correct, then no computer in your organization has that vulnerability.")
+            elif role == 'engineer':
+                try:
+                    cves = input("Enter the CVE you'd like to search for (FORMAT = CVE-####-####) [leave blank for all]: ")
+                    if cves == '' or cves == '%':
+                        cves = '%'
+                    else:
+                        cves = cves + '%'
+                    data = {'values': cves}
+                    response = requests.get(method + url_engineer + "/engineer_access_cves", auth=auth, json=data)
+                    tabledata = response.json()
+                    l1,l2 = len(tabledata), len(tabledata[0])
+                    df = pd.DataFrame(tabledata, index=['']*l1, columns=['']*l2)
+                    df.set_axis(['CVE', 'SEVERITY','VULN_ID'],axis=1,inplace=True)
+                    self.poutput('Here are the CVEs in your business unit:')
+                    self.poutput(df.to_string())
+                    self.poutput('\n')
+                except IndexError:
+                    self.poutput("Either the CVE does not exist, or that is not a valid CVE.")
+                    self.poutput("Please ensure you are using a proper CVE in the format CVE-{YEAR}-{CVEID} or CVE-{YEAR}")
+                    self.poutput("If your format is correct, then no computer in your organization has that vulnerability.")
+
             else:
                 self.poutput("Your role does not have access to this data.")
         else:
@@ -481,7 +509,7 @@ class cvetracker(Cmd):
                     tabledata = response.json()
                     l1,l2 = len(tabledata), len(tabledata[0])
                     df = pd.DataFrame(tabledata, index=['']*l1, columns=['']*l2)
-                    df.set_axis(['Username', 'Role', 'First_Name', 'Last_Name', 'User_ID'], axis=1,inplace=True)
+                    df.set_axis(['USERNAME', 'ROLE', 'FIRST_NAMe', 'LAST_NAME', 'USER_ID'], axis=1,inplace=True)
                     self.poutput('Here are the users in your organization: ')
                     self.poutput(df.to_string())
                     self.poutput('\n')
@@ -524,7 +552,7 @@ class cvetracker(Cmd):
                     tabledata = response.json()
                     l1,l2 = len(tabledata), len(tabledata[0])
                     df = pd.DataFrame(tabledata, index=['']*l1, columns=['']*l2)
-                    df.set_axis(['BUSINESS UNIT', 'BUSINESS UNIT ID', 'ADMIN ID', 'BELONGS TO'],axis=1,inplace=True)
+                    df.set_axis(['BUSINESS_UNIT', 'BUSINESS_UNIT_ID', 'ADMIN_ID', 'BELONGS_TO'],axis=1,inplace=True)
                     self.poutput(df.to_string())
                     self.poutput('\n')
 
@@ -556,7 +584,7 @@ class cvetracker(Cmd):
                     print(userdatas)
                     l1,l2 = len(tabledata), len(tabledata[0])
                     df = pd.DataFrame(tabledata, index=['']*l1, columns=['']*l2)
-                    df.set_axis(['Username', 'Role', 'First_Name', 'Last_Name', 'User_ID'], axis=1,inplace=True)
+                    df.set_axis(['USERNAME', 'ROLE', 'FIRST_NAME', 'LAST_NAME', 'USER_ID'], axis=1,inplace=True)
                     self.poutput('Here are the users in your organization: ')
                     self.poutput(df.to_string())
                     self.poutput('\n')
@@ -579,6 +607,53 @@ class cvetracker(Cmd):
             self.poutput("You must log in to view this data.")
     parser_create_bu.set_defaults(func=create_business)
             
+    def create_user(self, args):
+        if(loggedIn):
+            if role == 'engineer':
+                try:
+                    data = {'values': '%'}
+                    response = requests.get(method + url_engineer + '/engineer_access_users', auth=auth, json=data)
+                    tabledata = response.json()
+                    userdatas = []
+                    for i in tabledata:
+                        userdatas.append(i[0])
+                    name = input("Enter the new user's username: ")
+                    if name in userdatas:
+                        self.poutput('That username already exists.')
+                    else:
+                        newrole = input('Enter the new user\'s role: ')
+                        first = input('Enter the new user\'s First Name: ')
+                        last = input('Enter the new user\'s Last Name: ')
+
+                        data = {'username': name, 'role': newrole, 'firstname': first, 'lastname': last}
+                        response = requests.post(method + url_engineer + '/engineer_access_users', auth=auth, json=data)
+                        print(response.text)
+                        self.poutput("Your user is now added")
+                except:
+                    print("test")
+            else:
+                self.poutput("Your role does not have access to this action.")
+        else:
+            self.poutput("You must log in to view this data.")
+    parser_create_user.set_defaults(func=create_user)
+
+    def create_cve(self, args):
+        if(loggedIn):
+            if role == 'engineer':
+                try:
+                    cvename = input('Enter the name of the new CVE [Format: CVE-XXXX-XXXX]: ')
+                    sev = input('Enter the severity of the CVE [Format: X.X]: ')
+                    data = {'cve': cvename, 'severity': float(sev)}
+                    response = requests.post(method + url_engineer + '/engineer_access_cves', auth=auth, json=data)
+                    print(response.text)
+                    self.poutput("Your CVE is now added")
+                except ValueError:
+                    print("Please enter a valid Float (Decimal point number) for the Severity")
+            else:
+                self.poutput("Your role does not have access to this action.")
+        else:
+            self.poutput("You must log in to view this data.")
+    parser_create_cve.set_defaults(func=create_cve)
 
     ######################
     # do_delete function #
@@ -610,7 +685,7 @@ class cvetracker(Cmd):
                     tabledata = response.json()
                     l1,l2 = len(tabledata), len(tabledata[0])
                     df = pd.DataFrame(tabledata, index=['']*l1, columns=['']*l2)
-                    df.set_axis(['COMPUTER NAME', 'OS', 'COMPUTER_ID', 'OS_CERSION', 'BUSINESs_UNIT_ID'],axis=1,inplace=True)
+                    df.set_axis(['COMPUTER_NAME', 'OS', 'COMPUTER_ID', 'OS_VERSION', 'BUSINESS_UNIT_ID'],axis=1,inplace=True)
                     self.poutput(df.to_string())
                     self.poutput('\n')
                     try:
@@ -640,7 +715,7 @@ class cvetracker(Cmd):
                     tabledata = response.json()
                     l1,l2 = len(tabledata), len(tabledata[0])
                     df = pd.DataFrame(tabledata, index=['']*l1, columns=['']*l2)
-                    df.set_axis(['BUSINESS UNIT', 'BUSINESS UNIT ID', 'ADMIN ID', 'BELONGS TO'],axis=1,inplace=True)
+                    df.set_axis(['BUSINESS_UNIT', 'BUSINESS_UNIT_ID', 'ADMIN_ID', 'BELONGS_TO'],axis=1,inplace=True)
                     self.poutput(df.to_string())
                     self.poutput('\n')
                     try:
@@ -659,6 +734,65 @@ class cvetracker(Cmd):
             self.poutput("You must log in to complete this action.")
     parser_delete_bu.set_defaults(func=delete_bu)
         
+    def delete_user(self, args):
+        if(loggedIn):
+            if role == 'engineer':
+                try:
+                    userlist = '%'
+                    data = {'values': userlist}
+                    response = requests.get(method + url_engineer + "/engineer_access_users", auth=auth, json=data)
+                    tabledata = response.json()
+                    l1,l2 = len(tabledata), len(tabledata[0])
+                    df = pd.DataFrame(tabledata, index=['']*l1, columns=['']*l2)
+                    df.set_axis(['USERNAME', 'ROLE', 'FIRST_NAME', 'LAST_NAME', 'USER_ID'], axis=1,inplace=True)
+                    self.poutput("Here are the users in your organization: ")
+                    self.poutput(df.to_string())
+                    self.poutput('\n')
+                    try:
+                        bus = input('Enter the User ID from the above table to delete: ')
+                        data = {'id': int(bus)}
+                        response = requests.delete(method + url_engineer + '/engineer_access_users', auth=auth, json=data)
+                        print(response.text)
+                        self.poutput("The user is now deleted")
+                    except:
+                        print("That ID doesn't exist. Please try a different ID number.")
+                except IndexError:
+                    print("Please enter a valid ID number.")
+            else:
+                self.poutput("Your role does not have access to this action.")
+        else:
+            self.poutput("You must log in to complete this action.")
+    parser_delete_user.set_defaults(func=delete_user)
+
+    def delete_cve(self, args):
+        if(loggedIn):
+            if role == 'engineer':
+                try:
+                    cvelist = '%'
+                    data = {'values': cvelist}
+                    response = requests.get(method + url_engineer + "/engineer_access_cves", auth=auth, json=data)
+                    tabledata = response.json()
+                    l1,l2 = len(tabledata), len(tabledata[0])
+                    df = pd.DataFrame(tabledata, index=['']*l1, columns=['']*l2)
+                    df.set_axis(['CVE', 'SEVERITY','VULN_ID'],axis=1,inplace=True)
+                    self.poutput("Here are the CVEs in your organization: ")
+                    self.poutput(df.to_string())
+                    self.poutput('\n')
+                    try:
+                        bus = input('Enter the VULN_ID from the above table to delete: ')
+                        data = {'id': int(bus)}
+                        response = requests.delete(method + url_engineer + '/engineer_access_cves', auth=auth, json=data)
+                        print(response.text)
+                        self.poutput("The CVE is now deleted")
+                    except:
+                        print("That ID doesn't exist. Please try a different ID number.")
+                except IndexError:
+                    print("Please enter a valid ID number.")
+            else:
+                self.poutput("Your role does not have access to this action.")
+        else:
+            self.poutput("You must log in to complete this action.")
+    parser_delete_cve.set_defaults(func=delete_cve)
 
     ######################
     # do_update function #
@@ -691,7 +825,7 @@ class cvetracker(Cmd):
                     tabledata = response.json()
                     l1,l2 = len(tabledata), len(tabledata[0])
                     df = pd.DataFrame(tabledata, index=['']*l1, columns=['']*l2)
-                    df.set_axis(['COMPUTER NAME', 'OS', 'COMPUTER_ID', 'OS_CERSION', 'BUSINESs_UNIT_ID'],axis=1,inplace=True)
+                    df.set_axis(['COMPUTER_NAME', 'OS', 'COMPUTER_ID', 'OS_VERSION', 'BUSINESS_UNIT_ID'],axis=1,inplace=True)
                     self.poutput(df.to_string())
                     self.poutput('\n')
                     try:
@@ -715,6 +849,113 @@ class cvetracker(Cmd):
     parser_update_computer.set_defaults(func=update_computer)
 
 
+    def update_bu(self, args):
+        if(loggedIn):
+            if role == 'engineer':
+                try:
+                    bus = '%'
+                    data = {'values': bus}
+                    response = requests.get(method + url_engineer + "/engineer_access_bus", auth=auth, json=data)
+                    tabledata = response.json()
+                    l1,l2 = len(tabledata), len(tabledata[0])
+                    df = pd.DataFrame(tabledata, index=['']*l1, columns=['']*l2)
+                    df.set_axis(['BUSINESS_UNIT', 'BUSINESS_UNIT_ID', 'ADMIN_ID', 'BELONGS_TO'],axis=1,inplace=True)
+                    self.poutput(df.to_string())
+                    self.poutput('\n')
+                    try:
+                        bu_id = input('Enter the BUSINESS_UNIT_ID from the above table of the business unit you would like to update: ')
+                        name = input('What is the business unit\'s updated name?: ')
+                        admin = input('What is the updated business unit\'s administraotr\'s ID?: ')
+                        data = {'name': name, 'administrator': int(admin), 'id': int(bu_id)}
+                        response = requests.put(method + url_engineer + '/engineer_access_bus', auth=auth, json=data)
+                        print(response.text)
+                        self.poutput('Your business unit is now updated')
+                    except:
+                        print('Something unexpected occurred. Please try again.')
+                except IndexError:
+                    print("Please enter a valid Business Unit name.")
+            else:
+                self.poutput("Your role does not have access to this action.")
+        else:
+            self.poutput("You must log in to complete this action.")
+    parser_update_bu.set_defaults(func=update_bu)
+
+
+    def update_user(self, args):
+        if(loggedIn):
+            if role == 'engineer':
+                try:
+                    users = '%'
+                    data = {'values': users}
+                    response = requests.get(method + url_engineer + "/engineer_access_users", auth=auth, json=data)
+                    tabledata = response.json()
+                    l1,l2 = len(tabledata), len(tabledata[0])
+                    df = pd.DataFrame(tabledata, index=['']*l1, columns=['']*l2)
+                    df.set_axis(['USERNAME', 'ROLE', 'FIRST_NAME', 'LAST_NAME', 'USER_ID'], axis=1,inplace=True)
+                    self.poutput(df.to_string())
+                    self.poutput('\n')
+                    try:
+                        user_id = input('Enter the USER_ID from the above table of the user you would like to update: ')
+                        name = input('What is the user\'s updated username?: ')
+                        userdatas = []
+                        for i in tabledata:
+                            userdatas.append(i[0])
+                        if name in userdatas:
+                            self.poutput('That username already exists')
+                        else:
+                            newrole = input('What is the user\'s updated role?: ')
+                            first = input('What is the user\'s First Name?: ')
+                            last = input('What is the user\'s Last Name?: ')
+                            data = {'username': name, 'role': newrole, 'firstname': first, 'lastname': last, 'id': int(user_id)}
+                            response = requests.put(method + url_engineer + '/engineer_access_users', auth=auth, json=data)
+                            print(response.text)
+                            self.poutput('The user is now updated')
+                    except:
+                        print('Something unexpected occurred. Please try again.')
+                except IndexError:
+                    print("Please enter a valid Business Unit name.")
+            else:
+                self.poutput("Your role does not have access to this action.")
+        else:
+            self.poutput("You must log in to complete this action.")
+    parser_update_user.set_defaults(func=update_user)
+
+    def update_cve(self, args):
+        if(loggedIn):
+            if role == 'engineer':
+                try:
+                    cves = '%'
+                    data = {'values': cves}
+                    response = requests.get(method + url_engineer + "/engineer_access_cves", auth=auth, json=data)
+                    tabledata = response.json()
+                    l1,l2 = len(tabledata), len(tabledata[0])
+                    df = pd.DataFrame(tabledata, index=['']*l1, columns=['']*l2)
+                    df.set_axis(['CVE', 'SEVERITY','VULN_ID'],axis=1,inplace=True)
+                    self.poutput(df.to_string())
+                    self.poutput('\n')
+                    try:
+                        vuln_id = input('Enter the VULN_ID from the above table of the CVE you would like to update: ')
+                        name = input('What is the CVE\'s updated CVE name?: ')
+                        userdatas = []
+                        for i in tabledata:
+                            userdatas.append(i[0])
+                        if name in userdatas:
+                            self.poutput('That CVE already exists')
+                        else:
+                            sev = input('What is the CVE\'s severity: ')
+                            data = {'cve': name, 'severity': float(sev), 'id': int(vuln_id)}
+                            response = requests.put(method + url_engineer + '/engineer_access_cves', auth=auth, json=data)
+                            print(response.text)
+                            self.poutput('The CVE is now updated')
+                    except:
+                        print('Something unexpected occurred. Please try again.')
+                except IndexError:
+                    print("Please enter a valid CVE name.")
+            else:
+                self.poutput("Your role does not have access to this action.")
+        else:
+            self.poutput("You must log in to complete this action.")
+    parser_update_cve.set_defaults(func=update_cve)
 
 #############################
 # Define AWS Login function #
