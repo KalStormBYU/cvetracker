@@ -1,0 +1,37 @@
+# Functions
+- role
+	- Displays the current user role.
+- quit
+	- Stops the program and returns the user to the terminal.
+- logout
+	- Logs the user out and prevents them from running unauthorized commands.
+- login
+	- Logs the user in. User must provide AWS key and secret.
+- help
+	- Shows a list of commands with more information.
+- list	
+	- Lists everything for the following options.
+		- computers
+		- business_units
+		- vulns
+		- apps
+		- cve
+		- users
+- create
+	- Creates an entry for one of the following. Requires different information for each entry.
+		- computer
+		- business_unit
+		- cve
+		- user
+- create
+	- Delete an entry for one of the following. Requires searching for the entry to be deleted.
+		- computer
+		- business_unit
+		- cve
+		- user
+- update
+	- Updates an entry for one of the following. Requires searching for the entry to be updated.
+		- computer
+		- business_unit
+		- cve
+		- user
