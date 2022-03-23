@@ -581,7 +581,6 @@ class cvetracker(Cmd):
                     userdatas = []
                     for i in tabledata:
                         userdatas.append(i[4])
-                    print(userdatas)
                     l1,l2 = len(tabledata), len(tabledata[0])
                     df = pd.DataFrame(tabledata, index=['']*l1, columns=['']*l2)
                     df.set_axis(['USERNAME', 'ROLE', 'FIRST_NAME', 'LAST_NAME', 'USER_ID'], axis=1,inplace=True)
